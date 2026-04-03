@@ -22,7 +22,7 @@ Expect to spend **8-10 hours** this week. Some of that is reading and understand
 
 ## Prerequisites
 
-You must have completed **SETUP.md** before starting this week. That means:
+You must have completed **[Week 0: Setup](../SETUP.md)** before starting this week. That means:
 
 - Ghostty is installed and working
 - Zed is installed and working

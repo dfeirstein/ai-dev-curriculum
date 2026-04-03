@@ -96,6 +96,16 @@ This is your quick reference. When directing Claude Code, you need to know what 
 
 ---
 
+## File Storage
+
+### Vercel Blob
+**What it does:** Stores files (images, documents, uploads) in the cloud and returns URLs.
+**When to tell Claude:** "Use Vercel Blob for file storage. Store the URL in the database, not the file."
+**How it works:** User uploads file → Vercel Blob stores it → returns a URL → save URL in database → display using URL.
+**Alternatives:** AWS S3 (industry standard, maximum flexibility), Cloudflare R2 (S3-compatible, no egress fees), Google Cloud Storage (GCS, for Google ecosystem), Uploadthing (built-in upload UI components).
+
+---
+
 ## Services & Integrations
 
 ### Better Auth

@@ -65,6 +65,8 @@ You don't need to memorize these. You need to know *what they do* and *when to r
 | **Stripe** | Payments — subscriptions, billing, invoices | Week 6 |
 | **Sentry** | Error monitoring — catch bugs in production | Week 6 |
 | **PostHog** | Analytics — understand how users use your app | Week 6 |
+| **Vercel Blob** | File storage — images, uploads, attachments in the cloud | Week 8 |
+| **Resend** | Transactional email — welcome emails, notifications | Week 10 |
 | **Vitest** | Testing — automated verification that things work | Week 12 |
 | **GitHub Actions** | CI/CD — automated quality checks on every change | Week 14 |
 
@@ -153,6 +155,8 @@ Each week has four files:
 
 ## Getting Started
 
-**[SETUP.md](./SETUP.md)** → Install everything. Then → **[Week 1](./week-01/README.md)**.
+**[Week 0: Setup](./SETUP.md)** → Set up your Mac, install all tools, create all accounts. Budget a full day.
+
+Then → **[Week 1](./week-01/README.md)**.
 
 Let's build.

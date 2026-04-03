@@ -167,7 +167,24 @@ Test:
 - Move tasks between status columns
 - Filter by status and priority
 
-### Step 8: Invitation System
+### Step 8: File Attachments with Vercel Blob
+
+> "Claude, add file attachment support to tasks using Vercel Blob for storage:
+> 1. Users can attach files (images, PDFs, documents) to any task
+> 2. Upload files to Vercel Blob and store the returned URL in the database
+> 3. Display attached files on the task detail view with thumbnails for images
+> 4. Allow deleting attachments
+> 5. Add a task_attachments table (id, taskId, fileName, fileUrl, fileSize, mimeType, uploadedById, createdAt)
+> 6. Limit file size to 10MB
+> Validate file types with Zod. Use shadcn/ui for the upload interface."
+
+Test:
+- Upload an image to a task — verify it displays as a thumbnail
+- Upload a PDF — verify it shows with the filename and a download link
+- Delete an attachment — verify it's removed
+
+### Step 9: Invitation System
+
 
 > "Claude, build the invitation system:
 > 1. Invite page accessible to admins and owners
@@ -186,7 +203,7 @@ Test with your second account:
 - Verify Account B joins the organization with the correct role
 - Verify Account B can see the organization's projects and tasks
 
-### Step 9: Landing Page
+### Step 10: Landing Page
 
 > "Claude, build a marketing landing page at /. Include:
 > - Hero: 'Project management for modern teams' with a screenshot of the app
@@ -196,11 +213,11 @@ Test with your second account:
 > - If the user is already logged in, redirect to their organization dashboard
 > Make it look professional. Use shadcn/ui components and good typography."
 
-### Step 10: Monitoring
+### Step 11: Monitoring
 
 > "Claude, add Sentry for error monitoring and PostHog for analytics. Track these events: user-signed-up, organization-created, project-created, task-created, task-status-changed, member-invited, invitation-accepted."
 
-### Step 11: Quality Gates
+### Step 12: Quality Gates
 
 > "Claude, run npm run lint and fix any issues."
 
@@ -208,7 +225,7 @@ Test with your second account:
 
 > "Claude, run npm run build and make sure it completes without errors."
 
-### Step 12: Deploy
+### Step 13: Deploy
 
 > "Claude, commit all changes, push to GitHub, and deploy to Vercel. Walk me through setting up the environment variables in Vercel."
 

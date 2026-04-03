@@ -162,6 +162,38 @@ The landing page is a marketing tool. Its job is to convince someone to try the 
 
 ---
 
+## Part 7: File Storage with Vercel Blob
+
+Most SaaS apps need to handle file uploads — profile pictures, document attachments, image uploads. Files don't belong in your database (databases store structured data, not binary files). They belong in cloud storage.
+
+### How File Storage Works
+
+The mental model is simple:
+
+1. User uploads a file through your app
+2. Your app sends the file to cloud storage (Vercel Blob)
+3. Cloud storage saves the file and returns a URL
+4. Your database stores the URL (a short string), not the file itself
+5. When you need to display the file, you use the URL
+
+This separation is important: your database stays fast (it only stores small URLs), and your files live in storage optimized for serving files quickly.
+
+### Why Vercel Blob
+
+Vercel Blob is the simplest choice for this course because you're already deploying on Vercel:
+- No extra accounts or configuration
+- Works automatically with your Vercel project
+- Simple API: upload a file, get a URL
+- Handles CDN distribution (files load fast from anywhere)
+
+Other options exist (AWS S3, Cloudflare R2, Google Cloud Storage, Uploadthing) and you should know they exist. For larger apps or specific requirements, you might choose one of these. But for learning and shipping quickly, Vercel Blob is the right default.
+
+### When Directing Claude Code
+
+> "Claude, add file upload support using Vercel Blob. Users should be able to attach files to tasks. Store the file URL in the database, not the file itself. Limit uploads to 10MB. Validate file types with Zod."
+
+---
+
 ## What's Next
 
 Head to [project.md](project.md) to build TeamTask Pro.
