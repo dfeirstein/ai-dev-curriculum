@@ -104,8 +104,9 @@ Test:
 
 Test:
 - Click the test error button
-- Go to your Sentry dashboard
-- Verify the error appears with full context
+- Verify the error appears in Sentry. You can check manually, or use the Chrome tool:
+
+> "Claude, use the Chrome tool to open my Sentry dashboard and verify that the test error appears in the Issues tab with full context."
 
 Remove the test button after verifying:
 
@@ -117,8 +118,9 @@ Remove the test button after verifying:
 
 Test:
 - Perform each action (sign up, log in, create bookmark, search, etc.)
-- Go to your PostHog dashboard
-- Verify events are appearing
+- Verify events in PostHog. Use the Chrome tool:
+
+> "Claude, use the Chrome tool to open my PostHog dashboard, go to Events, and verify that the signup and bookmark-created events appear."
 
 ### Step 7: Add Welcome Email
 

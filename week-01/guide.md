@@ -66,6 +66,16 @@ You start it by typing `claude` in Ghostty. From that moment, you're in a conver
 
 Claude Code isn't magic -- it's a very capable collaborator. The better you describe what you want, the better the results. Vague asks get vague results. Specific asks get specific results. You'll get better at this with practice.
 
+### Claude Chrome Extension -- Your Browser Co-pilot
+
+Claude Code can also control your web browser through the Chrome extension. This means Claude can navigate to websites, click buttons, fill forms, take screenshots, and verify that things look right — all on your command.
+
+You can use it two ways:
+1. **From the CLI**: Tell Claude Code in your terminal "open my Vercel dashboard and verify the project deployed"
+2. **From the Side Panel**: Open the Claude extension in Chrome's Side Panel and give it instructions directly in the browser
+
+You'll set this up in SETUP.md and use it throughout the course for testing, QA, and automating tedious dashboard tasks.
+
 ### Git -- Your Save Points
 
 Git tracks every change you make to your project. Think of it like a video game save system. Every time you reach a good state, you save. If you mess something up later, you can go back to any previous save.
@@ -147,6 +157,32 @@ Your first result won't always be perfect. That's normal and expected. The key i
 - **Not helpful:** "Make it look better."
 
 The more precisely you describe what's wrong and what you want instead, the faster Claude Code gets you there. This is a skill, and you'll improve at it every week.
+
+### Claude Code Modes -- Your Gearshift
+
+Claude Code has different modes that control how much autonomy it has. You toggle between them with **`Shift+Tab`**. Think of it like a gearshift:
+
+**Normal Mode** (default)
+Claude Code has full autonomy — it reads files, writes code, runs commands, makes changes. This is "drive" mode. Use it when you trust Claude to build and you want speed.
+
+**Plan Mode**
+Claude Code researches and designs but does **not** make any changes to your files. It can read your code, search for patterns, and propose a plan — but nothing gets written until you approve. This is "think before you build" mode.
+
+- Use it during the **research** phase: "Claude, what's the best way to structure this?"
+- Use it during the **plan** phase: "Claude, design the page layout before building it"
+- When you're happy with the plan, press `Shift+Tab` to switch back to normal mode and tell Claude to execute
+
+**Accept-Edits Mode**
+Claude Code proposes changes one at a time, and you review each one before it's applied. This is "careful" mode. Use it when you're making changes to something important and want to approve each step.
+
+**The `Shift+Tab` habit:**
+Get comfortable pressing `Shift+Tab` to switch modes. A typical workflow:
+1. Start in **plan mode** — "Claude, research and plan this feature"
+2. Review the plan — ask questions, adjust
+3. Switch to **normal mode** (`Shift+Tab`) — "Claude, build it"
+4. Or switch to **accept-edits mode** (`Shift+Tab` again) if you want to review each change
+
+You'll use this constantly. It's one of the most important habits in AI-native development.
 
 ---
 

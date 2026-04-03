@@ -8,39 +8,52 @@ This is the most important guide in the entire curriculum. The workflow you lear
 
 This is THE workflow. Every feature, every page, every project follows this pattern. Internalize it.
 
-### Step 1: Research
+### Step 1: Research — Use Plan Mode
 
-Before building anything, understand the problem. You are gathering context so you can give Claude better direction.
+Press **`Shift+Tab`** to enter **plan mode** before you start. In plan mode, Claude Code explores and thinks without changing any files. This is exactly what you want during research.
 
 Ask Claude questions like:
 
-- "Claude, what are the best practices for building an about page on a personal website?"
-- "Claude, show me examples of well-designed contact forms."
-- "Claude, what tools or libraries are typically used for page transitions in Next.js?"
+- "What are the best practices for building an about page on a personal website?"
+- "Show me examples of well-designed contact forms."
+- "What tools or libraries are typically used for page transitions in Next.js?"
 
-You are not wasting time here. The five minutes you spend researching save thirty minutes of building the wrong thing.
+You are not wasting time here. The five minutes you spend researching save thirty minutes of building the wrong thing. And because you're in plan mode, Claude can't accidentally start building before you're ready.
 
-### Step 2: Plan
+### Step 2: Plan — Stay in Plan Mode
 
-Before Claude writes a single line of code, have it design the solution.
+Still in plan mode. Now shift from "explore the problem" to "design the solution."
 
-- "Claude, plan the architecture for a multi-page personal website. What pages do we need? What components should be shared?"
-- "Claude, enter plan mode. Design the navigation structure and layout for this site."
-- "Claude, what's the file structure going to look like for adding an about page?"
+- "Plan the architecture for a multi-page personal website. What pages do we need? What components should be shared?"
+- "Design the navigation structure and layout for this site."
+- "What's the file structure going to look like for adding an about page?"
 
-Review the plan. Ask questions. Push back on things that don't make sense. Adjust. THEN let it build.
+Review the plan. Ask questions. Push back on things that don't make sense. Adjust. Claude can revise the plan as many times as you want — nothing gets built until you say so.
 
 This prevents the number one mistake beginners make: jumping straight to building without thinking. When you skip the plan, you end up with a mess that takes longer to fix than it would have taken to plan in the first place.
 
-### Step 3: Execute
+### Step 3: Execute — Switch to Normal Mode
 
-Now Claude builds. Your job shifts to reviewing and course-correcting.
+Press **`Shift+Tab`** to switch to **normal mode**. Now Claude has permission to create and edit files. Time to build.
 
 - Give clear, specific prompts about what to build.
 - Review output frequently. Do not let Claude build 500 lines before you check what it made.
 - Use quality gates (build, lint, type-check) after each significant change.
 
-The cycle inside Execute is: **direct --> review --> adjust --> repeat.**
+If you want more control during execution, press `Shift+Tab` again to enter **accept-edits mode** — Claude proposes each change and you approve it individually. This is great for sensitive parts of your project.
+
+The cycle inside Execute is: **direct → review → adjust → repeat.**
+
+### The Mode Map
+
+| Phase | Mode | Toggle | Why |
+|-------|------|--------|-----|
+| Research | Plan mode | `Shift+Tab` | Claude explores without changing files |
+| Plan | Plan mode | (stay) | Claude designs the solution, you review |
+| Execute | Normal mode | `Shift+Tab` | Claude builds with full autonomy |
+| Execute (careful) | Accept-edits mode | `Shift+Tab` | You approve each change individually |
+
+This mode-switching habit is the single most important workflow skill in this course. It maps directly to how professionals use AI-native development: think first, build second, verify always.
 
 ---
 

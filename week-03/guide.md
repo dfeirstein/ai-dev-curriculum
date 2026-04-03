@@ -145,13 +145,45 @@ By default, Claude Code can read and write files, run terminal commands, and sea
 
 One of the most useful MCP connections is the Chrome browser tool. It lets Claude Code control a web browser -- navigating to URLs, clicking buttons, filling forms, and reading page content.
 
-Why is this useful?
+Why is this useful? The Chrome tool is one of your most powerful capabilities. Let's break it down.
 
-- **Visual verification:** "Claude, open the site in Chrome and check if the navigation works on mobile."
-- **Automated testing:** "Claude, go to each page of my site and verify they all load without errors."
-- **Interacting with web services:** Claude can navigate to external tools and services on your behalf.
+### Two Ways to Use Chrome
 
-You don't need to understand the protocol. You just need to know that when Claude has access to Chrome, you can ask it to do things in a browser.
+**1. From the CLI (Ghostty)**
+You tell Claude Code in your terminal to interact with Chrome:
+> "Claude, open Chrome, navigate to localhost:3000, and check if the navigation works on mobile viewport."
+
+Claude controls the browser from the terminal session. You can watch what happens in Chrome in real time.
+
+**2. From the Side Panel (Chrome Extension)**
+Open the Claude extension's Side Panel directly in Chrome and give it instructions while you're browsing:
+> "What do you see on this page? Does the layout look correct?"
+
+This is great for quick checks while you're already looking at something in the browser.
+
+### What You Can Do with Chrome
+
+**Visual QA and testing:**
+- "Open localhost:3000 and verify all pages load correctly"
+- "Check the site on mobile viewport — does the navigation collapse into a hamburger menu?"
+- "Fill out the contact form with test data and verify the success message appears"
+- "Take a screenshot of the homepage for my README"
+
+**Account and dashboard automation:**
+- "Open my Vercel dashboard and verify the latest deploy succeeded"
+- "Open Stripe, navigate to test mode, and confirm the product is configured"
+- "Open PostHog and check if the signup event appears in the events stream"
+- "Open Sentry and verify that the test error we triggered shows up in Issues"
+
+**Testing third-party integrations:**
+- "Log into my Neon console and verify the database has the expected tables"
+- "Open the Resend dashboard and check if the welcome email was sent"
+
+**Form filling and data entry:**
+- "Sign up for an account on the app using test@example.com"
+- "Create a new project called 'Test Project' with a description"
+
+This is a superpower. Instead of manually clicking through dashboards and forms, you describe what you want verified and Claude does it. Throughout the course, we'll use Chrome for testing, QA, and automating tedious browser tasks.
 
 ### Database MCP
 

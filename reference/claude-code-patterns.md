@@ -39,6 +39,64 @@ Check the output with quality gates.
 
 ---
 
+## Modes and Keyboard Shortcuts
+
+### The Three Modes (toggle with `Shift+Tab`)
+
+| Mode | What Claude Can Do | When to Use |
+|------|-------------------|-------------|
+| **Normal** | Full autonomy — reads, writes, runs commands | Building features, executing plans |
+| **Plan** | Read-only — researches and plans, no file changes | Research phase, planning phase, exploring options |
+| **Accept-edits** | Proposes changes one at a time, you approve each | Sensitive changes, reviewing carefully |
+
+Press **`Shift+Tab`** to cycle through modes. This is the most important keyboard shortcut in Claude Code.
+
+### Typical Mode Flow
+1. `Shift+Tab` → **Plan mode**: "Research the best approach for [X]"
+2. Review the research and plan
+3. `Shift+Tab` → **Normal mode**: "Build it"
+4. Or `Shift+Tab` → **Accept-edits mode**: review each change individually
+
+### Other Useful Shortcuts
+
+| Shortcut | What It Does |
+|----------|-------------|
+| `Shift+Tab` | Toggle between modes (normal → plan → accept-edits) |
+| `Esc` | Interrupt Claude mid-response |
+| `/help` | Show available commands |
+| `/clear` | Clear conversation context (fresh start) |
+| `Ctrl+C` | Cancel current operation |
+| `Ctrl+D` or `exit` | Exit Claude Code |
+
+---
+
+## Chrome Tool Patterns
+
+### Two Ways to Use It
+
+1. **From the CLI**: Tell Claude Code in your terminal to interact with the browser
+2. **From the Side Panel**: Open the Claude extension in Chrome and give instructions directly
+
+### Visual QA
+- "Open localhost:3000 and verify all pages load correctly"
+- "Check if the navigation works on mobile viewport"
+- "Take a screenshot of the homepage for the README"
+
+### E2E Testing
+- "Sign up as a new user, create a project, add a task, and verify it appears on the dashboard"
+- "Test the Stripe checkout flow with test card 4242 4242 4242 4242"
+
+### Dashboard Verification
+- "Open my Vercel dashboard and verify the latest deploy succeeded"
+- "Open Sentry and check if the test error appears in Issues"
+- "Open PostHog and verify the signup event was tracked"
+
+### Account Automation
+- "Open Stripe dashboard and confirm test mode is enabled"
+- "Open Neon console and verify the database has the expected tables"
+
+---
+
 ## Prompting Patterns
 
 ### Be Specific About What, Not How

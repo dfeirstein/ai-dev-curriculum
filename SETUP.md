@@ -283,6 +283,38 @@ Throughout this course, Claude Code is your primary tool. You'll:
 
 You don't write code. You direct Claude Code.
 
+### Claude Code Modes — Your Gearshift
+
+Claude Code has three modes you toggle with **`Shift+Tab`**:
+
+- **Normal mode** — Claude builds with full autonomy (reads, writes, runs commands)
+- **Plan mode** — Claude researches and plans but doesn't change any files
+- **Accept-edits mode** — Claude proposes each change, you approve one by one
+
+You'll learn when to use each mode in Week 1. For now, just know that `Shift+Tab` is the most important keyboard shortcut.
+
+### Install the Claude Chrome Extension
+
+The Chrome extension lets Claude Code see and interact with your web browser. This is useful for testing your apps, verifying dashboards, and automating tedious browser tasks.
+
+1. Open Chrome (install it from https://google.com/chrome if you don't have it)
+2. Go to the Chrome Web Store and search for "Claude Code" (or ask Claude Code: "How do I install the Chrome extension?")
+3. Install the extension
+4. You'll see the Claude icon in your Chrome toolbar
+5. Click it to open the **Side Panel** — this is where you can give Claude instructions directly in the browser
+
+**Two ways to use it:**
+- **From Ghostty (CLI):** Tell Claude Code "open Chrome and navigate to my Vercel dashboard"
+- **From Chrome (Side Panel):** Open the Side Panel and type "verify this page loaded correctly"
+
+**Test it now:**
+After setting up your Vercel account (Part 5), try:
+- Open Chrome and navigate to https://vercel.com/dashboard
+- Open the Claude Side Panel
+- Type: "What do you see on this page?"
+
+If Claude can describe the page content, the extension is working.
+
 ---
 
 ## Part 4: Version Control
