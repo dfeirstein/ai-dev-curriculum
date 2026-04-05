@@ -40,6 +40,7 @@
 - If a student cannot find an open source issue to work on, have pre-selected 3-5 repos with good-first-issue labels in the Next.js/TypeScript ecosystem. Offer these as fallback options.
 - For the npm package path, help students identify something they built in TeamTask Pro or Project 3 that could be extracted into a reusable package. A date formatting utility, a validation helper, a React hook -- these are all valid packages.
 - If a student is truly stuck on both paths, have them do an in-depth architecture review of 2 open source projects instead, with written analysis. The core skill this week is navigating unfamiliar code.
+- The advanced `/powerup` lessons ("Auto mode," "Advanced hook patterns," "SDK headless mode," "Cloud task orchestration") are assigned this week. These represent the most powerful Claude Code capabilities and pair well with the advanced patterns content.
 
 ## Differentiation
 - **Moving fast?** Submit multiple open source contributions. Publish an npm package AND make an open source contribution. Write a blog post about the experience. Add CI/CD to their npm package with automated publishing on version bump.

@@ -216,6 +216,13 @@ If an API key gets committed to a public GitHub repo, bots find it within minute
 5. **Rotate compromised keys immediately.** If a key was ever exposed, generate a new one and revoke the old one.
 6. **Use separate keys per environment.** Production Stripe keys are different from test Stripe keys.
 
+### Try It: /powerup
+
+These advanced `/powerup` lessons match the production-grade workflows you're building this week:
+- **"Worktrees"** -- Run parallel git sessions so you can work on a feature branch while CI runs on another
+- **"Code from anywhere"** -- Use `/remote-control` for remote sessions when monitoring production
+- **"Schedule recurring tasks"** -- Automate production tasks with `/schedule`
+
 ---
 
 ## What's Next

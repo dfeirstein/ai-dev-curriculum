@@ -184,6 +184,14 @@ Get comfortable pressing `Shift+Tab` to switch modes. A typical workflow:
 
 You'll use this constantly. It's one of the most important habits in AI-native development.
 
+### Try It: /powerup
+
+Run `/powerup` in Claude Code and complete these two beginner lessons:
+- **"Talk to your codebase"** -- Learn to reference files with `@` so Claude sees exactly what you're working with
+- **"Steer with modes"** -- Practice toggling between Normal, Plan, and Accept-edits modes with `Shift+Tab`
+
+These interactive lessons reinforce what you just read with hands-on practice inside the tool. Each one takes a few minutes and includes animated demos.
+
 ---
 
 ## Part 4: Git -- Your Safety Net

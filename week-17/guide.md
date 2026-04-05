@@ -175,3 +175,11 @@ Examples: a custom React hook, a validation utility, a UI component, a data form
 6. **Publish to npm.**
 
 You'll direct Claude Code through every step. The key skill here isn't the mechanics of npm publishing -- it's the judgment of what's worth extracting and how to make it useful to others.
+
+### Try It: /powerup
+
+These advanced `/powerup` lessons cover the most powerful Claude Code capabilities:
+- **"Auto mode"** -- Configure permission automation so Claude can work with less interruption on trusted tasks
+- **"Advanced hook patterns"** -- Build sophisticated automation chains that go beyond simple lint-on-save
+- **"SDK headless mode"** -- Use Claude programmatically from scripts and pipelines
+- **"Cloud task orchestration"** -- Distribute work across multiple agents for large-scale tasks

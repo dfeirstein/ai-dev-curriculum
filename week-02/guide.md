@@ -87,6 +87,11 @@ Then read what Claude wrote. Edit it if something is wrong or missing. This file
 
 Think of CLAUDE.md as onboarding documentation for your AI team member. When a new developer joins a team, you hand them a doc that explains how the project works, what the conventions are, and what tools to use. CLAUDE.md is exactly that -- for Claude.
 
+### Try It: /powerup
+
+Run `/powerup` in Claude Code and complete this lesson:
+- **"Teach Claude your rules"** -- Practice setting up CLAUDE.md and see how it changes Claude's behavior across sessions
+
 ---
 
 ## Part 3: How to Review Agent Output
@@ -245,3 +250,9 @@ You are back to a working state. Try again with a different approach.
 If Claude's context is confused and nothing is making sense, start a new Claude Code session. Close the terminal, open a new one, and start fresh. Claude will re-read your CLAUDE.md and start with clean context.
 
 This is not a failure. It is a tool in your toolkit.
+
+### Try It: /powerup
+
+Run `/powerup` in Claude Code and complete these lessons:
+- **"Undo anything"** -- Learn `/rewind` and `Esc-Esc` for quick recovery when things go sideways
+- **"Run in the background"** -- Learn to run tasks in the background so you can keep working while Claude executes

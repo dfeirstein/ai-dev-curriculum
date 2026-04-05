@@ -38,6 +38,7 @@
 - If stuck on multi-tenancy: Build it in layers. First, just get organizations working (create, view). Then add memberships (join an org). Then add roles (owner vs member). Then add projects and tasks. Each layer is a small, testable increment.
 - If rushing without reviewing: Ask them to log in as a "member" role and try to delete a project. If it works, their RBAC is broken. This single test reveals whether access control is real or cosmetic.
 - If frustrated: Acknowledge this is the peak difficulty week. Remind them that Weeks 9 and 10 build on this foundation, so getting it right now pays off. If they need to, it is better to ship a working subset (auth + orgs + projects, no role enforcement) than a broken whole.
+- For complex multi-step builds: Have them run `/powerup` lessons "Multiply yourself" (subagents) and "Run tasks in background" to learn how to parallelize work with Claude — e.g., schema migrations running in one agent while UI scaffolding happens in another.
 
 ## Differentiation
 - **Moving fast?** Add task assignment to specific org members. Add task due dates with overdue highlighting. Add organization settings page. Add an activity feed showing recent actions within the org.

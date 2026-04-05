@@ -191,6 +191,42 @@ When Claude goes in circles:
 
 ---
 
+## Built-in Learning: /powerup
+
+Claude Code includes `/powerup` -- 18 interactive lessons with animated demos and hands-on exercises, organized by difficulty. Run `/powerup` in Claude Code to access the lesson menu.
+
+### Beginner (Weeks 1-2)
+| Lesson | What You Learn | Curriculum Week |
+|--------|---------------|-----------------|
+| Talk to your codebase | Reference files with `@` syntax | Week 1 |
+| Steer with modes | Toggle Normal/Plan/Accept-edits with `Shift+Tab` | Week 1 |
+| Undo anything | `/rewind` and `Esc-Esc` for quick recovery | Week 2 |
+| Run in the background | Background task execution | Week 2 |
+| Teach Claude your rules | CLAUDE.md project memory | Week 2 |
+| Dial the model | `/model` and `/effort` for different tasks | Week 3 |
+
+### Intermediate (Weeks 3-8)
+| Lesson | What You Learn | Curriculum Week |
+|--------|---------------|-----------------|
+| Extend with tools | MCP server configuration | Week 3 |
+| Automate your workflow | Hooks for automatic quality gates | Week 3 |
+| Plan mode & context management | Advanced context techniques | Week 3 |
+| Multiply yourself | Subagents for parallel work | Week 8 |
+| Run tasks in background | Background execution for long builds | Week 8 |
+| Code from anywhere | `/remote-control` for remote sessions | Week 14 |
+
+### Advanced (Weeks 14-17)
+| Lesson | What You Learn | Curriculum Week |
+|--------|---------------|-----------------|
+| Worktrees | Parallel git sessions | Week 14 |
+| Schedule recurring tasks | `/schedule` for automation | Week 14 |
+| Auto mode | Permission automation | Week 17 |
+| SDK headless mode | Programmatic Claude usage | Week 17 |
+| Advanced hook patterns | Sophisticated automation chains | Week 17 |
+| Cloud task orchestration | Distributed agent work | Week 17 |
+
+---
+
 ## Common Mistakes to Avoid
 
 **Vague prompts:** "Make it better" → Better: "Improve the loading performance of the dashboard page."

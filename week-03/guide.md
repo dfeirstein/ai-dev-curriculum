@@ -131,6 +131,12 @@ Skills are things you invoke on purpose: "Run /check." Hooks are things that hap
 
 They complement each other. Skills give you on-demand workflows. Hooks give you always-on quality gates.
 
+### Try It: /powerup
+
+Run `/powerup` in Claude Code and complete these intermediate lessons:
+- **"Automate your workflow"** -- Hands-on practice with hooks and automation patterns
+- **"Extend with tools"** -- Learn how MCP servers expand Claude's reach to external services
+
 ---
 
 ## Part 4: MCP Servers -- Connecting to External Tools
@@ -256,3 +262,9 @@ The first time you set up skills and hooks, it takes time. But every project aft
 The gap between a basic user and a power user widens with every project. After ten projects, the power user has a library of workflows, a refined CLAUDE.md, and a development environment that practically runs itself. The basic user is still typing the same instructions from scratch.
 
 This week, you become a power user.
+
+### Try It: /powerup
+
+Run `/powerup` and complete these lessons to round out your power user toolkit:
+- **"Dial the model"** -- Learn `/model` and `/effort` to choose the right model and effort level for different tasks
+- **"Plan mode & context management"** -- Advanced techniques for managing Claude's context across complex sessions

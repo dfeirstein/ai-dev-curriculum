@@ -38,6 +38,7 @@
 - If stuck on environment setup: Don't let them spiral. Sit with them, check Node version (`node -v`), check that Claude Code is installed (`claude --version`). Most issues are PATH-related.
 - If rushing without reviewing: Ask them to read you the bio text on their landing page out loud. Ask "Is that what you want it to say?" This builds the review habit.
 - If frustrated: Remind them this is the hardest week in terms of setup-to-payoff ratio. Once the environment works, every future week starts faster. Show them someone else's working deploy to keep motivation up.
+- If struggling with modes or `@file` syntax: Have them run `/powerup` and complete the "Talk to your codebase" and "Steer with modes" beginner lessons. The interactive demos make these concepts click faster than explanation alone.
 
 ## Differentiation
 - **Moving fast?** Add a custom favicon, an animated gradient background, or a dark/light mode toggle. Have them direct Claude to add a "projects" section with placeholder cards.

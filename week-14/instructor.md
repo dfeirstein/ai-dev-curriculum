@@ -39,6 +39,7 @@
 - If GitHub Actions is completely new, walk through the workflow file line by line with the student. Make sure they understand triggers (`on: push`), jobs, steps, and how secrets work.
 - For CI failures, have the student read the full Actions log output. Resist the urge to debug for them -- reading CI logs is a skill they need.
 - If performance optimization feels abstract, have the student run Lighthouse before and after a single change. Seeing a score jump from 55 to 75 after adding image optimization makes it click.
+- Advanced `/powerup` lessons "Worktrees," "Code from anywhere," and "Schedule recurring tasks" are valuable this week. They teach production-grade Claude Code workflows that pair naturally with CI/CD concepts.
 
 ## Differentiation
 - **Moving fast?** Add a CI step that checks test coverage and fails if it drops below a threshold. Set up staging and production environments with different deploy targets. Add a GitHub Action that posts Lighthouse scores as PR comments. Configure Dependabot for automated dependency updates.

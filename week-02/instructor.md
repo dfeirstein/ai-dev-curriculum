@@ -38,6 +38,7 @@
 - If stuck on the workflow: Pair with them on one page. You narrate the phases out loud: "First, let's research. Now let's plan. Now let's execute." Walk through one full cycle together, then have them do the next page solo.
 - If rushing without reviewing: Institute a "show me the diff" rule. Before every commit, the student must run `git diff` and explain one thing that changed. This slows them down productively.
 - If frustrated: Usually they are frustrated because Claude "isn't listening." Check their CLAUDE.md — often the fix is better project context. Also check if their prompts are vague. Help them rewrite one prompt to be specific and watch the improvement.
+- If struggling with CLAUDE.md or recovery: Direct them to `/powerup` lessons "Teach Claude your rules," "Undo anything," and "Run in the background." These reinforce the week's core concepts through guided practice.
 
 ## Differentiation
 - **Moving fast?** Add a working contact form that validates input (client-side). Add page transitions. Have them write a real blog post as a static page and style it well.

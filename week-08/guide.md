@@ -192,6 +192,12 @@ Other options exist (AWS S3, Cloudflare R2, Google Cloud Storage, Uploadthing) a
 
 > "Claude, add file upload support using Vercel Blob. Users should be able to attach files to tasks. Store the file URL in the database, not the file itself. Limit uploads to 10MB. Validate file types with Zod."
 
+### Try It: /powerup
+
+As you tackle a larger, multi-user project, these intermediate `/powerup` lessons become essential:
+- **"Multiply yourself (subagents)"** -- Learn to run parallel agents for complex SaaS work -- one agent building the schema while another scaffolds the UI
+- **"Run tasks in background"** -- Keep working while Claude handles longer builds and migrations
+
 ---
 
 ## What's Next

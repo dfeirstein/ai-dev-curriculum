@@ -38,6 +38,7 @@
 - If stuck on skills vs hooks: Use a physical analogy. A skill is like a recipe card you pull out when you want to cook something. A hook is like a smoke detector — it is always monitoring and fires automatically when something goes wrong.
 - If rushing without reviewing: Ask them to break something on purpose and show you the hook catching it. Ask them to invoke a skill and walk you through what it does. This forces engagement with the tools.
 - If frustrated: Usually frustrated with configuration files and YAML/JSON syntax. Remind them to have Claude Code write all configuration. Their job is to describe what they want the hook or skill to do, not to write the config by hand.
+- `/powerup` is especially useful this week: "Automate your workflow," "Extend with tools," "Dial the model," and "Plan mode & context management" all map directly to this week's content. Assign them as pre-work or as reinforcement for students who need extra practice.
 
 ## Differentiation
 - **Moving fast?** Create a multi-step skill that scaffolds an entire new page with component, tests, and routing. Set up the Chrome MCP tool and demonstrate using it for visual QA. Add a post-deploy hook that verifies the live site loads.
