@@ -1,205 +1,228 @@
-# Project: TeamTask Pro -- Notifications and Email
+# Project: Frat House Frenzy -- Game Engine Core
 
-**What you're building:** Adding transactional email via Resend and in-app notifications to TeamTask Pro. Welcome emails, invitation emails, task assignment notifications, a notification bell, and user notification preferences.
+**What you're building:** The provably fair slot engine for Frat House Frenzy -- cryptographic RNG, symbol mapping, ways-to-win calculation, cascading/tumble mechanic, payout computation, and real-time win events. This is the math-heavy week.
 
 **Time estimate:** 10-12 hours
 
-**What you'll need open:** Ghostty (your terminal), a web browser, and the Resend dashboard.
+**What you'll need open:** Ghostty (your terminal), a web browser, and a calculator (you'll be verifying math).
 
 ---
 
 ## The Brief
 
-TeamTask Pro is almost complete. It has auth, organizations, projects, tasks, payments, and feature gating. But it doesn't communicate with users proactively. This week you add the communication layer that makes the difference between a functional tool and a polished product.
+Frat House Frenzy has player accounts, balances, deposits, and bet controls. But when you hit "Spin," nothing actually happens. This week you build the brain of the slot machine: the game engine that generates provably fair random outcomes, maps them to symbols on a 5x4 grid, calculates wins using the ways-to-win system, handles cascading (tumble) mechanics where winning symbols disappear and new ones fall in, and computes payouts.
 
-After this week, TeamTask Pro will welcome new users, email invitations, notify people about their tasks, and let users control their notification preferences. It will be a complete, production-quality SaaS application.
+This is the most technically demanding week. The game engine is pure business logic -- no UI work, just math, cryptography, and API design. Every spin must be verifiable by the player using the provably fair system (HMAC-SHA256 with server and client seeds).
+
+Think of this as building the core service that powers the game. The UI connects to it next week.
 
 ---
 
 ## Phase 1: Research
 
-> "Claude, I need to add transactional email and in-app notifications to my Next.js SaaS app. For email, I want to use Resend with React Email templates. For in-app notifications, I want the bell icon pattern with an unread count. What's the best architecture for a notification system that handles both email and in-app?"
+> "Claude, I'm building a provably fair slot game engine. The game uses a 5x4 grid with 1,024 ways to win (not paylines). I need to understand: how does ways-to-win calculation work? How is it different from traditional paylines? How do I calculate all winning combinations on a 5-reel, 4-row grid?"
 
-> "Claude, how should I structure the notification service? I want a central place that receives events (like 'task assigned') and decides which notifications to send (email, in-app, or both) based on the event type and user preferences."
+> "Claude, explain the provably fair system used by crypto casinos. I need HMAC-SHA256 with a server seed (committed before the spin via SHA-256 hash), a client seed that the player can edit, and a nonce that increments with each spin. How do I map the HMAC output to symbol positions on a 5x4 grid?"
 
-> "Claude, for in-app notifications, should I use polling or real-time updates? What's the tradeoff? How often should I poll for new notifications?"
+> "Claude, how does the cascading/tumble mechanic work in slots like Gates of Olympus or Sweet Bonanza? When symbols are part of a win, they're removed and new symbols fall in from above. Multiple cascades can happen in a single spin. How do I implement this with the provably fair system -- does each cascade use a new RNG call or is it all determined from the initial seed?"
 
-> "Claude, how does Resend handle email deliverability? Do I need to configure SPF and DKIM? What if I want to send from notifications@teamtaskpro.com?"
-
-### Set Up Resend
-
-Before building:
-
-1. Create a Resend account at [resend.com](https://resend.com) if you don't have one
-2. Create an API key in the Resend dashboard
-3. Note: on the free tier, you can only send to the email address you signed up with -- that's fine for testing
+> "Claude, I need to implement a specific math model. My slot has low-pay symbols (0.1x-0.4x for 3+ of a kind), high-pay symbols (1x-8x for 3+ of a kind), wilds, and special symbols. The target RTP is 96.09% with extreme volatility. How do I set up symbol weights to hit these targets? How do I verify the RTP through simulation?"
 
 ---
 
 ## Phase 2: Plan
 
-> "Claude, plan the notifications and email integration for TeamTask Pro. Here's the spec:
+> "Claude, plan the complete game engine for Frat House Frenzy. Here's the spec:
 >
-> **Email (via Resend + React Email):**
-> - Welcome email on signup (greeting, getting started link)
-> - Invitation email when someone is invited to an org (org name, role, accept link)
-> - Task assignment email when a task is assigned (task title, project name, link to task)
-> - Payment failed email to org owner (prompt to update payment method)
+> **Provably Fair RNG:**
+> - Server generates a random server seed and commits its SHA-256 hash before each game
+> - Player has a client seed (default random, editable) and a nonce (auto-incrementing)
+> - Each spin: HMAC-SHA256(serverSeed, clientSeed:nonce) produces a hex string
+> - The hex string is mapped to symbol positions on the grid
+> - After the game, the server seed is revealed so the player can verify
 >
-> **In-App Notifications:**
-> - Notification bell in nav bar with unread count badge
-> - Dropdown showing recent notifications (title, message, time ago, read/unread)
-> - Click notification to navigate to relevant page and mark as read
-> - 'Mark all as read' button
-> - Poll for new notifications every 30 seconds
+> **Symbol System:**
+> - Low pays: Red Cup (0.1x/0.15x/0.4x for 3/4/5 of a kind), Blue Cup (0.15x/0.2x/0.5x), White Cup (0.15x/0.25x/0.6x), Green Cup (0.2x/0.3x/0.8x)
+> - High pays: The Pledge (1x/1.25x/1.5x), The DJ (1.5x/1.75x/2x), Pong King (2x/2.5x/3x), House Mom (3x/4x/5x), Frat President (5x/6.5x/8x)
+> - Wild (The Keg): Substitutes for all except scatter and special symbols
+> - Scatter (Noise Complaint): 3/4/5 triggers bonus modes
+> - Each symbol has a weight that determines how often it appears
 >
-> **Notification Events:**
-> - User signs up -> welcome email
-> - User invited to org -> invitation email
-> - Invitation accepted -> in-app notification to org admins
-> - Task assigned -> email + in-app notification to assignee
-> - Task status changed -> in-app notification to task creator
-> - Payment failed -> email + in-app notification to org owner
+> **Ways to Win (1,024 ways on 5x4):**
+> - A win requires matching symbols on consecutive reels starting from reel 1
+> - Each reel can have multiple matching symbols, and each combination is a separate way
+> - Calculate all ways simultaneously, sum the payouts
 >
-> **User Preferences:**
-> - Settings page to toggle email notifications by type
-> - Respect preferences before sending email
-> - Unsubscribe link in every email
+> **Cascading/Tumble Mechanic:**
+> - After a win, winning symbols are removed
+> - Remaining symbols fall down, new symbols fill from the top
+> - New symbols are determined from the same provably fair seed (use subsequent bytes)
+> - Check for new wins, repeat until no more wins
+> - Track the cascade chain length for the response
 >
-> **Database changes:**
-> - notifications table (recipientId, type, title, message, link, read, createdAt)
-> - notification_preferences table (userId, taskAssignmentEmail, taskReminderEmail, weeklyDigestEmail, paymentAlertEmail)
+> **Payout Calculation:**
+> - For each winning way: payout = bet * symbolPaytable[symbol][count] / totalWays
+> - Wait, actually for ways games: payout = bet * symbolPaytable[symbol][count] * waysCount
+> - Sum all payouts across all winning ways and all cascades
+> - Multiply by any active multipliers
 >
-> Plan the database changes, notification service architecture, email templates, UI components, and API routes."
+> **API Design:**
+> - POST /api/game/spin: accepts betAmount, returns grid, wins, cascades, payout, seeds
+> - GET /api/game/verify: accepts serverSeed, clientSeed, nonce -- returns the calculated grid so players can verify
+> - POST /api/game/seed: lets the player update their client seed
+> - GET /api/game/fairness: returns current server seed hash (commitment) and client seed
+>
+> **Win Events:**
+> - After each spin, emit win data that the frontend can consume
+> - Use Server-Sent Events (SSE) for real-time win notifications
+> - Include: win amount, cascade chain length, biggest single win, total multiplier
+>
+> Plan the module structure, the RNG pipeline, symbol weight tables, payout tables, and the cascade loop algorithm."
 
-Review the plan. Key questions:
+Review the plan carefully. Key questions:
 
-- Is there a central notification service, or are notification triggers scattered?
-- How are user preferences checked before sending email?
-- What does the notification dropdown look like?
-- How does polling work -- what API endpoint, what frequency?
-- Are email templates consistent in design?
+- Is the HMAC output long enough to fill a 5x4 grid (20 positions)?
+- How are symbol weights applied to the RNG output?
+- Does the cascade mechanic reuse the same seed or need additional randomness?
+- How is the RTP verified before going live?
+- Are all payout calculations using integer cents?
 
 ---
 
 ## Phase 3: Execute
 
-### Step 1: Environment Setup
+### Step 1: Provably Fair RNG Module
 
-> "Claude, add Resend environment variables: RESEND_API_KEY, RESEND_FROM_EMAIL (use 'onboarding@resend.dev' for testing or your custom domain). Install the resend and @react-email/components packages. Update .env.local and .env.example."
+> "Claude, build the provably fair RNG module for Frat House Frenzy:
+> 1. A function to generate a random server seed using Node.js crypto.randomBytes(32)
+> 2. A function to compute the SHA-256 hash of a server seed (the commitment)
+> 3. A function to compute HMAC-SHA256(serverSeed, clientSeed:nonce) and return the hex string
+> 4. A function to extract N random numbers from the HMAC hex output, each in a range [0, max). Use 4 bytes per number, convert to a value in range using modulo (or better, rejection sampling to avoid bias)
+> 5. A verification function that takes serverSeed, clientSeed, nonce and reproduces the exact same output
+> 6. Unit tests with Vitest: test that the same inputs always produce the same output, test that different inputs produce different output, test the range of extracted numbers
+> Put this in a lib/rng.ts module."
 
-### Step 2: Database Changes
+Test:
+- Run the unit tests
+- Manually verify: compute HMAC-SHA256 of a known seed pair and check the output matches
 
-> "Claude, add the notification tables:
-> 1. notifications table: id, recipientId (references users), type (enum: task_assigned, task_status_changed, member_joined, payment_failed), title, message, link, read (boolean, default false), createdAt
-> 2. notification_preferences table: userId (references users), taskAssignmentEmail (boolean, default true), taskReminderEmail (boolean, default true), weeklyDigestEmail (boolean, default true), paymentAlertEmail (boolean, default true)
-> Run the migration."
+> "Claude, show me the output of the RNG module for serverSeed='test-server-seed', clientSeed='test-client-seed', nonce=1. I want to verify it by hand."
 
-### Step 3: Email Templates
+### Step 2: Symbol System and Paytable
 
-> "Claude, create React Email templates for TeamTask Pro:
-> 1. WelcomeEmail: greeting with user's name, brief welcome message, 'Get Started' button linking to the dashboard. Clean design with TeamTask Pro branding.
-> 2. InvitationEmail: 'You've been invited to join [org name]' with the inviter's name, assigned role, and 'Accept Invitation' button.
-> 3. TaskAssignedEmail: '[Assigner name] assigned you a task' with task title, project name, and 'View Task' button.
-> 4. PaymentFailedEmail: 'Your payment for [org name] failed' with a prompt to update payment method and 'Update Payment' button.
+> "Claude, build the symbol system for Frat House Frenzy:
+> 1. Define all symbols as a TypeScript enum or const object with IDs, names, and categories (low/high/special)
+> 2. Define the paytable: for each symbol, the payout multiplier for 3, 4, and 5 of a kind
+> 3. Define symbol weights for each reel position (reels can have different weight distributions)
+> 4. Create a function that takes a random number and returns a symbol based on the weights (weighted random selection)
+> 5. Create a function that maps an array of 20 random numbers to a 5x4 grid of symbols
+> 6. Unit tests: verify weight distribution over 100,000 samples matches expected frequencies within 1%
 >
-> All templates should share a consistent layout: TeamTask Pro header, content area, CTA button, and footer with unsubscribe link."
+> Use these payout values (multiplied by bet):
+> - Red Cup: 0.1x / 0.15x / 0.4x (3/4/5 of a kind)
+> - Blue Cup: 0.15x / 0.2x / 0.5x
+> - White Cup: 0.15x / 0.25x / 0.6x
+> - Green Cup: 0.2x / 0.3x / 0.8x
+> - The Pledge: 1x / 1.25x / 1.5x
+> - The DJ: 1.5x / 1.75x / 2x
+> - Pong King: 2x / 2.5x / 3x
+> - House Mom: 3x / 4x / 5x
+> - Frat President: 5x / 6.5x / 8x
+>
+> Put this in lib/symbols.ts."
 
-Preview the templates:
+### Step 3: Ways-to-Win Calculator
 
-> "Claude, set up a preview route so I can see each email template in the browser during development. I want to view them at /dev/emails/[template-name]."
+> "Claude, build the ways-to-win calculator for the 5x4 grid:
+> 1. A function that takes a 5x4 grid of symbols and returns all winning combinations
+> 2. For each symbol type (excluding wilds and specials): check if it appears on reel 1, then reel 2, then reel 3, etc. Wilds count as matching any symbol
+> 3. A win requires the symbol (or wild) on at least 3 consecutive reels starting from reel 1
+> 4. For each winning symbol: count the number of ways (product of matching positions per reel) and the length (how many consecutive reels)
+> 5. Return an array of win results: { symbol, count (reels), ways, payout }
+> 6. Payout for each win = bet * paytable[symbol][count] * ways / totalWays... actually, check: in ways-to-win games, payout = bet / totalWays * paytable[symbol][count] * waysForThisWin. Verify the correct formula.
+> 7. Unit tests: create a known grid with a known win and verify the calculator finds it with the correct payout
+> Put this in lib/ways-calculator.ts."
 
-### Step 4: Email Sending Service
+Test thoroughly:
 
-> "Claude, create an email sending service that:
-> 1. Takes an email type, recipient, and data (template variables)
-> 2. Checks the recipient's notification preferences before sending
-> 3. Renders the appropriate React Email template
-> 4. Sends via Resend
-> 5. Logs every email sent (type, recipient, timestamp)
-> 6. Handles errors gracefully (don't crash the app if email fails -- log the error to Sentry)"
+> "Claude, create a test grid where reel 1 has [FratPresident, Cup, Cup, Cup], reel 2 has [FratPresident, Wild, Cup, Cup], reel 3 has [FratPresident, Cup, Cup, Cup], reel 4 has [Cup, Cup, Cup, Cup], reel 5 has [Cup, Cup, Cup, Cup]. How many ways does the Frat President win on 3 reels? What's the payout at a $1.00 bet? Walk me through the math."
 
-### Step 5: Welcome Email
+### Step 4: Cascade/Tumble Engine
 
-> "Claude, trigger a welcome email when a new user signs up. After successful account creation, call the email service to send the WelcomeEmail template. Also create default notification preferences for the new user (all enabled)."
+> "Claude, build the cascade (tumble) mechanic:
+> 1. After calculating wins on the initial grid, remove all symbols that were part of any winning combination
+> 2. Remaining symbols fall down within their reel (gravity)
+> 3. Empty positions at the top of each reel are filled with new symbols
+> 4. New symbols come from the provably fair RNG -- use the next bytes from the same HMAC output (or extend the seed with an incrementing cascade counter: HMAC(serverSeed, clientSeed:nonce:cascadeN))
+> 5. Check for new wins on the updated grid
+> 6. Repeat until no more wins are found
+> 7. Return the full cascade chain: an array of { grid, wins, payout } for each step
+> 8. Total payout = sum of all cascade payouts
+> 9. Unit tests: create a grid that should cascade and verify the chain
+> Put this in lib/cascade-engine.ts."
 
-Test:
-- Sign up with a new account
-- Check your email for the welcome message
-- Verify the content and links are correct
+### Step 5: Spin Orchestrator
 
-### Step 6: Invitation Email
+> "Claude, build the spin orchestrator that ties everything together:
+> 1. Accept a spin request: playerId, betAmount
+> 2. Validate: player has sufficient balance, bet is within allowed range
+> 3. Deduct the bet from balance (in a transaction)
+> 4. Get or create the player's current server seed and client seed
+> 5. Generate the initial grid using the RNG module
+> 6. Run the ways-to-win calculator
+> 7. If wins exist, run the cascade engine
+> 8. Calculate total payout across all cascades
+> 9. Credit any winnings to the player's balance
+> 10. Record the spin in the database (bet, result grid, cascades, payout, seeds used)
+> 11. Increment the nonce
+> 12. Return: initial grid, cascade chain, total payout, win details, server seed hash (not the seed itself -- that's revealed later)
+> Put this in lib/spin-orchestrator.ts."
 
-> "Claude, update the invitation system from Week 8. When an invitation is created, send the InvitationEmail template to the invited person's email address. Include the organization name, the inviter's name, the assigned role, and the accept link."
+### Step 6: Game API Routes
 
-Test:
-- Create an invitation from an org admin account
-- Check the invited email for the invitation message
-- Click the accept link and verify it works
+> "Claude, build the game API routes:
+> 1. POST /api/game/spin -- calls the spin orchestrator, returns the full result
+> 2. GET /api/game/verify -- accepts serverSeed, clientSeed, nonce in query params, reproduces the grid and wins, returns them for verification
+> 3. POST /api/game/seed -- lets the player update their client seed (also rotates the server seed and reveals the old one)
+> 4. GET /api/game/fairness -- returns the current server seed hash and the player's client seed
+> 5. All routes protected by auth middleware
+> 6. All inputs validated with Zod
+> 7. Spin route must handle errors gracefully: if anything fails after the bet is deducted, refund the bet"
 
-### Step 7: In-App Notification System
+Test the API:
+- Hit the spin endpoint with a valid bet -- verify you get a grid, wins, and payout
+- Hit verify with the revealed server seed -- verify it produces the same grid
+- Change the client seed and verify future spins use it
+- Try spinning with insufficient balance -- should get a clear error
 
-> "Claude, build the in-app notification system:
-> 1. Create a notification service function that creates a notification record in the database
-> 2. API route GET /api/notifications -- returns the current user's notifications (most recent 20), plus unread count
-> 3. API route PATCH /api/notifications/[id] -- marks a notification as read
-> 4. API route PATCH /api/notifications/read-all -- marks all notifications as read
-> 5. Notification bell component in the nav bar: shows unread count badge, opens a dropdown on click
-> 6. Notification dropdown: list of recent notifications with title, message, time ago, read/unread styling
-> 7. Clicking a notification calls the mark-as-read API and navigates to the notification's link
-> 8. Poll for new notification count every 30 seconds to keep the badge updated"
+### Step 7: Win Event System
 
-Test:
-- Verify the bell icon appears in the nav
-- Manually create a notification in the database to test the UI
-- Click the notification and verify it navigates and marks as read
+> "Claude, build a real-time win event system:
+> 1. Server-Sent Events endpoint at /api/game/events that streams win notifications
+> 2. When a spin produces a win, push a win event with: amount, multiplier, cascade chain length, biggest single cascade win
+> 3. For big wins (50x+ bet), push a special 'big-win' event type
+> 4. Include a recent wins feed: last 10 wins across all players (anonymized) for social proof
+> 5. Client-side hook (useWinEvents) that connects to the SSE endpoint and provides the latest events
+> 6. Fallback to polling every 5 seconds if SSE connection fails
+> This maps to the notification system pattern from a SaaS app -- real-time events pushed to the client."
 
-### Step 8: Task Assignment Notifications
+### Step 8: RTP Verification
 
-> "Claude, when a task is assigned to a user:
-> 1. Create an in-app notification for the assignee: 'You've been assigned a task: [task title]' with a link to the task
-> 2. Send a task assignment email (check preferences first)
-> 3. If the task was previously assigned to someone else and is being reassigned, also notify the previous assignee: 'Task [task title] was reassigned'
-> Trigger these from the task update API route when the assigneeId changes."
+> "Claude, build an RTP simulation tool:
+> 1. A script at scripts/verify-rtp.ts that simulates 1,000,000 spins
+> 2. Use a fixed bet amount ($1.00) and run through the full spin pipeline (RNG -> grid -> wins -> cascades -> payout)
+> 3. Track: total wagered, total paid out, actual RTP (totalPaid / totalWagered * 100)
+> 4. Track: hit frequency (% of spins that produce any win), average win size, max win
+> 5. Print a summary report
+> 6. The target RTP is 96.09% -- if the simulation is far off, we need to adjust symbol weights
+> 7. Run it with: npx tsx scripts/verify-rtp.ts
+> This is critical -- the math model must be verified before the game goes live."
 
-Test:
-- Assign a task to another user
-- Check: does an in-app notification appear for the assignee?
-- Check: does the assignee receive an email?
-- Reassign the task and verify both users are notified
+Run the simulation:
 
-### Step 9: Additional Notification Triggers
+> "Claude, run the RTP simulation and show me the results. If the RTP is not within 0.5% of 96.09%, adjust the symbol weights and run again."
 
-> "Claude, add these notification triggers:
-> 1. Invitation accepted: create an in-app notification for org admins and owner -- '[Name] joined [org name]'
-> 2. Task status changed: create an in-app notification for the task creator -- 'Task [title] moved to [new status]' (only if the person changing status is not the creator)
-> 3. Payment failed webhook: create an in-app notification for the org owner and send PaymentFailedEmail"
-
-### Step 10: Notification Preferences
-
-> "Claude, build a notification preferences page at /settings/notifications:
-> 1. Show toggles for each email notification type: task assignments, task reminders, weekly digest, payment alerts
-> 2. Save preferences to the notification_preferences table
-> 3. Load current preferences on page load
-> 4. Add an unsubscribe link in every email footer that links to this preferences page
-> 5. Before sending any email, check the recipient's preferences -- skip the email if they've opted out"
-
-Test:
-- Turn off task assignment emails in preferences
-- Assign a task to yourself
-- Verify: in-app notification appears, but no email is sent
-- Turn it back on, assign again, verify email is sent
-
-### Step 11: Polish
-
-> "Claude, polish the notification experience:
-> 1. Add empty state to the notification dropdown ('No notifications yet')
-> 2. Add notification grouping -- if there are multiple notifications of the same type, show a count ('3 new task assignments')
-> 3. Add a subtle animation when new notifications arrive (badge pulse)
-> 4. Make sure all notification links work correctly (including for users who are viewing a different org)
-> 5. Add loading states to the notification dropdown"
-
-### Step 12: Quality Gates
+### Step 9: Quality Gates
 
 > "Claude, run npm run lint and fix any issues."
 
@@ -207,17 +230,15 @@ Test:
 
 > "Claude, run npm run build and make sure it completes without errors."
 
-### Step 13: Deploy
+### Step 10: Deploy
 
-> "Claude, commit all changes, push to GitHub, and deploy to Vercel. Add the Resend environment variables (RESEND_API_KEY, RESEND_FROM_EMAIL) to Vercel."
+> "Claude, commit all changes, push to GitHub, and deploy to Vercel."
 
 Test on the live URL:
-- Full signup flow with welcome email
-- Invitation flow with invitation email
-- Task assignment with notification and email
-- Notification bell, dropdown, and mark-as-read
-- Notification preferences
-- Verify all notification links navigate correctly
+- Hit the spin API endpoint and verify you get valid results
+- Verify the provably fair system: spin, get the server seed hash, change client seed to reveal old server seed, verify the old spin
+- Check that the SSE endpoint streams win events
+- Verify the RTP simulation results are in the target range
 
 ---
 
@@ -225,19 +246,22 @@ Test on the live URL:
 
 Your project is complete when all of these are true:
 
-- [ ] Resend is integrated for transactional email
-- [ ] Welcome email is sent on signup
-- [ ] Invitation email is sent when inviting a member
-- [ ] Task assignment triggers both email and in-app notification
-- [ ] Email templates are consistent and professional
-- [ ] Notification bell in nav bar shows unread count
-- [ ] Notification dropdown shows recent notifications
-- [ ] Clicking a notification marks it as read and navigates to the link
-- [ ] "Mark all as read" works
-- [ ] Notification preferences page lets users toggle email types
-- [ ] Email preferences are respected (disabled notifications are not sent)
-- [ ] Every email has an unsubscribe link
-- [ ] Polling updates the notification count every 30 seconds
+- [ ] Provably fair RNG module generates deterministic results from server seed + client seed + nonce
+- [ ] SHA-256 commitment hash is provided before each spin
+- [ ] Verification endpoint reproduces the exact same grid from revealed seeds
+- [ ] Players can update their client seed (which rotates and reveals the old server seed)
+- [ ] Symbol system uses weighted random selection with configurable weights per reel
+- [ ] Paytable matches the design spec for all 9 regular symbols
+- [ ] Ways-to-win calculator correctly identifies all winning combinations on a 5x4 grid
+- [ ] Wilds substitute correctly in win calculations
+- [ ] Cascade mechanic removes winning symbols, drops remaining, fills from top
+- [ ] Cascades continue until no more wins, with provably fair new symbols
+- [ ] Payout calculation is correct across all cascades
+- [ ] Spin API deducts bet, runs engine, credits winnings, records the spin
+- [ ] All balance mutations use database transactions with proper error handling
+- [ ] SSE endpoint streams win events in real time
+- [ ] RTP simulation runs and produces results within 0.5% of 96.09% target
+- [ ] All game logic has unit tests
 - [ ] `npm run lint` passes
 - [ ] `npm run typecheck` passes
 - [ ] `npm run build` completes without errors
@@ -247,60 +271,45 @@ Your project is complete when all of these are true:
 
 ## Stretch Goals
 
-**Add a Weekly Digest Email**
-> "Claude, add a weekly digest email that summarizes activity from the past week: tasks completed, tasks created, new members, upcoming due dates. Create a scheduled function (or document how to set one up with a cron job) that sends this every Monday morning to users who have the weekly digest enabled."
+**Add Scatter and Bonus Trigger Logic**
+> "Claude, implement the scatter system. When 3/4/5 Noise Complaint scatters land, trigger the corresponding bonus mode (Party/Darty/Full Send). For now, just detect the trigger and return the bonus mode type in the spin result -- the actual bonus round gameplay will come later."
 
-**Add Real-Time Notifications with SSE**
-> "Claude, replace polling with Server-Sent Events (SSE) for real-time notifications. When a new notification is created, push it to the recipient's browser immediately. Fall back to polling if SSE is not supported."
+**Add the Mystery Symbol**
+> "Claude, implement the Mystery Solo Cup. When mystery symbols land, they all reveal as the same random symbol (determined by the provably fair RNG). This can create unexpected big wins. Add this to the symbol system and cascade engine."
 
-**Add Push Notifications**
-> "Claude, add browser push notifications using the Web Push API. When a notification is created and the user is not currently on the site, send a browser push notification. Ask for permission on first visit."
+**Add Multiplier Tracking**
+> "Claude, add a global multiplier that increases with each cascade step. Start at 1x, add 1x per cascade. All payouts in a cascade step are multiplied by the current multiplier. This dramatically increases volatility on long cascade chains."
 
-**Add @Mentions in Task Comments**
-> "Claude, add the ability to @mention team members in task comments. When someone is mentioned, create an in-app notification and send an email: '[Name] mentioned you in a comment on [task title]'."
-
-**Add Email Digest Batching**
-> "Claude, instead of sending an email for every task assignment, batch them. If a user receives multiple task assignments within 5 minutes, combine them into a single email: 'You have 3 new task assignments.' This reduces email fatigue."
+**Add a Spin History API**
+> "Claude, build a spin history endpoint that returns a player's last 50 spins with full details: grid, cascades, payout, and seeds. Include a 'Verify' button that checks each spin against the provably fair system. This is the transparency layer that builds player trust."
 
 ---
 
 ## Troubleshooting
 
-**Emails not arriving**
-> "Claude, emails are not showing up. Check: is the RESEND_API_KEY correct? Is the from address valid (use onboarding@resend.dev for testing)? Check the Resend dashboard for delivery logs. On the free tier, you can only send to your signup email."
+**RTP simulation way off target**
+> "Claude, the RTP simulation shows 89% instead of 96%. The symbol weights are wrong -- high-pay symbols are too rare or their payout multipliers are too low. Adjust the weights on each reel to increase the frequency of mid-range payouts. Re-run the simulation after each adjustment."
 
-**Email templates look broken**
-> "Claude, the email looks wrong in my inbox. Email rendering varies between clients. Check the templates in the preview route first. Use the React Email components for layout instead of custom CSS. Test in Gmail, Outlook, and Apple Mail if possible."
+**Verification produces different results**
+> "Claude, the verify endpoint produces a different grid than what was shown during the spin. Check: is the nonce being incremented at the right time (after the spin, not before)? Is the cascade using the correct extended seed? Are the same symbol weights used in both paths?"
 
-**Notification count not updating**
-> "Claude, the bell badge doesn't update when I get new notifications. Check: is the polling interval set up correctly? Is the API route returning the correct unread count? Check the browser's network tab to verify requests are being made every 30 seconds."
+**Cascades not working correctly**
+> "Claude, symbols aren't falling down properly after a win. Check the cascade engine: after removing winning symbols, remaining symbols should shift DOWN within their column (reel), and new symbols fill from the TOP. Make sure the gravity function processes each reel independently."
 
-**Notifications sent to wrong users**
-> "Claude, a user received a notification meant for someone else. Check the recipientId logic in each notification trigger. Make sure task assignment notifications go to the assignee, not the assigner. Audit each notification creation call."
+**HMAC output too short for the grid**
+> "Claude, the HMAC-SHA256 output is only 32 bytes but I need more random numbers for cascades. Use HMAC(serverSeed, clientSeed:nonce:0) for the initial grid, HMAC(serverSeed, clientSeed:nonce:1) for cascade 1, etc. Each cascade gets its own derivation."
 
-**Preferences not being respected**
-> "Claude, I disabled task assignment emails but I'm still receiving them. Check: is the email service actually checking preferences before sending? Is the preferences query using the correct userId? Add a log line showing the preference check result."
+**Floating point errors in payout calculation**
+> "Claude, payouts are showing values like $1.9999999999 instead of $2.00. All payout calculations must use integer cents. Convert the paytable multipliers to integer operations: instead of 0.1x, use (bet * 10) / 100. Round at the end, not during intermediate steps."
 
 ---
 
 ## Reflection
 
-Step back and look at what you've built over the last three weeks. TeamTask Pro is a complete SaaS application:
+This was the hardest week so far. You just built a cryptographically verifiable game engine -- the kind of system that online casinos spend months building with teams of mathematicians and engineers.
 
-- User authentication with email and OAuth
-- Multi-tenant organizations with role-based access
-- Projects and tasks with full CRUD
-- Member invitations
-- Stripe subscription billing with free and paid tiers
-- Feature gating based on subscription status
-- Transactional email for key events
-- In-app notifications with real-time updates
-- User notification preferences
-- Error monitoring with Sentry
-- Product analytics with PostHog
-- A marketing landing page
-- Deployed and live on Vercel
+The provably fair system is particularly powerful. Players don't have to trust you -- they can verify every single spin. The server commits to the outcome before the spin (via the SHA-256 hash), the player contributes randomness (via their client seed), and after the game, everything is verifiable. This is the same commit-reveal pattern used in blockchain applications, voting systems, and cryptographic protocols.
 
-This is not a tutorial project. This is the same architecture, the same stack, and the same patterns used by real SaaS companies generating real revenue. The difference between TeamTask Pro and a shipped product is polish and users -- not technology.
+The RTP simulation is how the industry actually works. Before a slot game goes live, the math model is simulated millions of times to verify it hits the target return. You did the same thing -- you didn't just build a game, you built the verification system that proves it's fair.
 
-You've now completed the foundation of the Build phase. You know how to research, plan, and direct Claude Code to build production-quality software. The next projects will push you further -- but the workflow stays the same.
+Next week, you'll connect this engine to a visual reel UI with animations, and ship v1.

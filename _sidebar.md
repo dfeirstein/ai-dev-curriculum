@@ -26,17 +26,17 @@
     - [Project](/week-07/project)
     - [Resources](/week-07/resources)
 
-- **Phase 3: SaaS Product**
-  - [Week 8: TeamTask Pro Foundation](/week-08/guide)
+- **Phase 3: Frat House Frenzy**
+  - [Week 8: FHF Foundation](/week-08/guide)
     - [Project](/week-08/project)
     - [Resources](/week-08/resources)
-  - [Week 9: Payments & Subscriptions](/week-09/guide)
+  - [Week 9: Wallet & Payments](/week-09/guide)
     - [Project](/week-09/project)
     - [Resources](/week-09/resources)
-  - [Week 10: Notifications & Email](/week-10/guide)
+  - [Week 10: Game Engine](/week-10/guide)
     - [Project](/week-10/project)
     - [Resources](/week-10/resources)
-  - [Week 11: Dashboard & Admin](/week-11/guide)
+  - [Week 11: Reel UI & v1 Launch](/week-11/guide)
     - [Project](/week-11/project)
     - [Resources](/week-11/resources)
 
@@ -51,17 +51,17 @@
     - [Project](/week-14/project)
     - [Resources](/week-14/resources)
 
-- **Phase 5: Independence**
-  - [Week 15: Your Own Project](/week-15/guide)
+- **Phase 5: Level Up**
+  - [Week 15: Advanced Mechanics](/week-15/guide)
     - [Project](/week-15/project)
     - [Resources](/week-15/resources)
-  - [Week 16: Polish & Shipping](/week-16/guide)
+  - [Week 16: Bonus Rounds & Polish](/week-16/guide)
     - [Project](/week-16/project)
     - [Resources](/week-16/resources)
   - [Week 17: Advanced Patterns](/week-17/guide)
     - [Project](/week-17/project)
     - [Resources](/week-17/resources)
-  - [Week 18: Speed Build](/week-18/guide)
+  - [Week 18: Speed Build — Second Game](/week-18/guide)
     - [Project](/week-18/project)
     - [Resources](/week-18/resources)
   - [Week 19: Portfolio Assembly](/week-19/guide)
@@ -72,6 +72,7 @@
     - [Resources](/week-20/resources)
 
 - **Reference**
+  - [Game Design Brief](/reference/game-design-brief)
   - [Claude Code Patterns](/reference/claude-code-patterns)
   - [Stack Guide](/reference/stack-guide)
   - [Quality Gates](/reference/quality-gates)

@@ -1,182 +1,145 @@
-# Project: Choose Your Own -- MVP Build
+# Project: Frat House Frenzy — Advanced Mechanics (Week 1/2)
 
-**What you're building:** An MVP of a project you choose. Something you'd actually use.
+**What you're building:** The advanced base game features for Frat House Frenzy -- xNudge Wilds, Beer Pong Respin, Party Foul events, xWays Funnels, and the animations that bring them to life.
 
 **Time estimate:** 15-20 hours across the week
 
-**What you'll need open:** Ghostty, your browser, and your research notes
+**What you'll need open:** Ghostty, your browser, the game design brief (`reference/game-design-brief.md`)
 
 ---
 
 ## The Brief
 
-This is your project. You pick the idea, you scope the features, you make the architecture decisions, and you direct Claude Code to build it. By the end of the week, you'll have a deployed MVP with core functionality working.
+Your base game works. Players can spin, symbols cascade, and wins pay out with provably fair verification. But right now every spin feels the same. This week you add the mechanics that make Frat House Frenzy play like a real high-volatility slot -- wilds that nudge into view and stack multipliers, reels that lock and respin, random events that break the rhythm, and expanding ways that blow the grid open.
+
+Each mechanic needs its own animation. A nudge wild sliding down a reel with a multiplier counter climbing. Locked reels shaking during a respin. Mystery cups flipping to reveal matching symbols. These animations are what make the difference between a math engine and a game people want to play.
 
 ---
 
-## Project Ideas
+## Day 1: xNudge Wild Mechanic
 
-If you don't have your own idea yet, pick one of these. Each is scoped to be achievable in two weeks and uses the stack you already know.
+### Step 1: Understand the Mechanic
 
-1. **Booking/Scheduling App** -- Let users create available time slots and let others book them. Think Calendly, but simpler.
-2. **Content Platform** -- A place to write and publish articles with rich text editing, categories, and a public reading view.
-3. **Marketplace** -- A two-sided platform where users can list items and others can browse and contact sellers.
-4. **Budget Tracker** -- Track income and expenses, categorize spending, see monthly summaries and trends.
-5. **Habit Tracker** -- Define daily habits, check them off, see streaks and completion rates over time.
-6. **Job Board** -- Companies post jobs, candidates browse and apply. Filter by category, location, remote status.
-7. **Recipe Manager** -- Save recipes from anywhere, organize by category, search by ingredient or name.
-8. **Link-in-Bio Tool** -- A customizable page of links, like Linktree, with analytics showing click counts.
-9. **Event RSVP App** -- Create events, share invite links, collect RSVPs, send reminders.
-10. **Study Flashcard App** -- Create decks of flashcards, study with spaced repetition, track progress.
+The xNudge Wild is The Keg Stand symbol. It's a full-reel wild -- it occupies every position on a reel. When it lands partially visible (only 1-3 positions showing), it nudges into full view. Each nudge adds +1 to a multiplier that applies to every win involving that wild.
 
-Pick one that excites you. If none of these spark joy, use your own idea -- just make sure it's scoped to an MVP you can build in a week.
+Example: The Keg Stand lands showing 2 of 4 positions on reel 3. It nudges down 2 positions to fill the reel. The multiplier is now 3x (base 1x + 2 nudges). Every winning combination that passes through reel 3 gets multiplied by 3x.
 
----
+### Step 2: Build the xNudge Engine Logic
 
-## Day 1-2: Research Phase
+> "I need to build the xNudge Wild mechanic for Frat House Frenzy. Here's how it works: The Keg Stand is a full-reel wild symbol. When it lands partially visible on any reel, it nudges into full view -- each position it nudges adds +1 to a multiplier (starting at 1x). The multiplier applies to all wins that include that reel. Build the engine logic first -- determine nudge count, calculate the multiplier, and integrate it with the existing win evaluation. Add Vitest tests that verify: a wild showing 1 of 4 positions gets 4x multiplier, a wild showing 3 of 4 gets 2x, and two xNudge wilds on different reels multiply together."
 
-### Step 1: Competitive Analysis
+Verify the math by running the tests. The multiplier calculation is the foundation -- if it's wrong, everything built on top will be wrong.
 
-Before you build anything, research what exists.
+### Step 3: Animate the Nudge
 
-> "Claude, I want to build a [your project idea]. Search for and list the top 5 existing tools that do something similar. For each one, describe what they do well and what common complaints users have."
+> "Add Framer Motion animations for the xNudge Wild. When The Keg Stand lands partially visible: first show the partial symbol, then animate it sliding into full view (one position at a time, 200ms per nudge). Display a multiplier counter next to the reel that increments with each nudge -- use a scale-up + glow effect on each increment. The final multiplier should pulse briefly before wins are evaluated."
 
-Now go use 2-3 of those tools yourself. Sign up, click around, try the core features. Take notes:
-
-- What felt good about the experience?
-- What was frustrating or confusing?
-- What's missing that you wish was there?
-
-### Step 2: Define Your Feature Set
-
-Write down three lists:
-
-**Must-Have (this week):**
-- [ ] Core feature 1 (the main thing your app does)
-- [ ] Core feature 2 (if needed for the core to work)
-- [ ] User authentication (if users need accounts)
-- [ ] Basic UI that's functional and clear
-
-**Nice-to-Have (next week):**
-- [ ] Polish and visual refinement
-- [ ] Secondary features
-- [ ] Settings or preferences
-- [ ] Email notifications
-
-**Later (post-curriculum):**
-- [ ] Advanced features
-- [ ] Integrations
-- [ ] Mobile optimization
-- [ ] Social features
-
-### Step 3: Map User Flows
-
-For each must-have feature, write out the user flow:
-
-1. User arrives at the site. What do they see?
-2. User signs up / logs in. Where do they land?
-3. User performs the core action. What steps do they take?
-4. User sees the result. What does it look like?
-
-These flows become your building roadmap.
+Test this visually. Spin until you get an xNudge wild (or temporarily increase its frequency for testing). The nudge should feel satisfying -- a reel sliding into place with a multiplier climbing.
 
 ---
 
-## Day 3: Plan Phase
+## Day 2: Beer Pong Respin
 
-### Step 4: Architecture Planning with Claude Code
+### Step 4: Build the Respin Engine Logic
 
-Start Claude Code and plan your project:
+The Beer Pong Respin triggers when two xNudge Wilds land on different reels. The reels between them lock, and all other reels respin. If the wilds have multipliers, those multipliers multiply together on the respin evaluation.
 
-> "I'm building a [project name] -- a [one-sentence description]. Here are the must-have features: [list them]. I want to use Next.js 15 with the App Router, TypeScript, Tailwind CSS, shadcn/ui, Postgres with Drizzle ORM, and Better Auth. Help me plan: what database tables do I need, what pages should the app have, and how should the project be organized?"
+> "Build the Beer Pong Respin mechanic. Trigger condition: two xNudge Wilds land on different reels in the same spin. When triggered: lock the wild reels and all reels between them. Respin the remaining reels once. Evaluate wins using the locked wilds and their multipliers -- if both wilds have multipliers, multiply them together. Add this to the game engine with proper state management. Write tests for: trigger detection (wilds on reels 1 and 3, wilds on reels 2 and 5, single wild doesn't trigger), locked reel identification, and combined multiplier calculation."
 
-Review Claude Code's plan carefully. Ask follow-up questions:
+### Step 5: Animate the Respin
 
-> "Is this the simplest possible schema for the MVP? Can we cut anything?"
+> "Add animations for the Beer Pong Respin. When triggered: flash the two wild reels with a neon highlight, then show the reels between them locking into place (a padlock icon or chain effect). Dim the locked reels slightly. Spin only the unlocked reels with a distinct animation -- faster spin speed, different easing. When the respin completes, evaluate and show wins with the combined multiplier displayed prominently."
 
-> "Walk me through the user flow for [core feature]. Does this page structure support it?"
+### Step 6: Test the Full Flow
 
-### Step 5: Set Up the Project
-
-Once you're happy with the plan, start building:
-
-> "Create a new Next.js project called [your-project-name] with TypeScript, Tailwind CSS, and the App Router. Set up the project structure based on our plan."
-
-Then, one by one:
-
-> "Set up Postgres with Drizzle ORM. Create the database schema we planned: [list the tables]."
-
-> "Set up Better Auth with email/password authentication. Add sign-in and sign-up pages."
-
-> "Set up the basic layout with a navigation bar, sidebar if needed, and responsive design using shadcn/ui components."
-
-Verify each step works before moving on. Run the dev server, check the browser, confirm auth works.
+Play through the xNudge + Beer Pong combination manually. Does a partial wild nudge into view, show its multiplier, then trigger a respin when a second wild appears? Does the combined multiplier feel impactful? Temporarily boost wild frequency to test this efficiently.
 
 ---
 
-## Days 4-5: Build Sprint
+## Day 3: Party Foul Random Events
 
-### Step 6: Build Core Features
+### Step 7: Build the Party Foul System
 
-Now build your must-have features one at a time. For each feature:
+Party Foul triggers randomly, about 1 in 40 spins. When it fires, one of three events occurs:
 
-1. **Describe it clearly to Claude Code:**
-   > "Build the [feature name]. Here's how it should work: [describe the user flow]. Use [specific UI components] for the interface. Store the data in the [table name] table we created."
+1. **Mystery Solo Cups** -- 5-12 random positions become mystery symbols that all reveal the same random symbol
+2. **High-Pay-Only Respin** -- Remove all low-pay symbols from the reels and respin, guaranteeing only high-pay characters can land
+3. **Random Wilds** -- Place 3-8 wild symbols at random positions on the grid
 
-2. **Verify it works:**
-   - Open the browser and test the feature
-   - Try the happy path (everything works as expected)
-   - Try edge cases (empty inputs, missing data, unexpected actions)
-   - Does it look reasonable? Not perfect -- reasonable.
+> "Build the Party Foul random event system. It triggers with approximately 1 in 40 probability on any base game spin (check before the spin result is shown). When triggered, randomly select one of three events with equal probability. Event 1 -- Mystery Solo Cups: select 5-12 random grid positions, replace them with mystery symbols, then reveal them all as the same randomly chosen symbol. Event 2 -- High-Pay-Only Respin: remove the spin result, filter the symbol pool to only high-pay symbols (The Pledge through The Frat President), and respin with only those symbols available. Event 3 -- Random Wilds: select 3-8 random grid positions and place wild symbols there, then evaluate wins. Build each event as its own function. Write tests for trigger probability (run 10,000 simulated spins, expect roughly 250 triggers with reasonable variance), mystery symbol reveal consistency, high-pay filtering, and random wild placement."
 
-3. **Commit the working feature:**
-   > "Commit this with the message: Add [feature name] with [brief description]"
+### Step 8: Animate Each Event
 
-4. **Move to the next feature.**
+> "Add distinct Framer Motion animations for each Party Foul event. All three start the same way: a 'PARTY FOUL!' banner slams onto the screen with a shake effect. Then: Mystery Solo Cups -- cups appear at the selected positions with a flip animation, then simultaneously reveal the chosen symbol with a burst effect. High-Pay-Only Respin -- low-pay symbols on the grid shatter and fall away, then the reels respin with a premium feel (slower, more dramatic). Random Wilds -- wild symbols rain down onto the grid from above, landing at their positions with a bounce. Each animation should take 2-3 seconds total before win evaluation."
 
-### Step 7: Deploy Early
+---
 
-Don't wait until everything is done. Deploy as soon as you have auth and at least one feature working:
+## Day 4: xWays Funnels
 
-> "Set up this project for deployment on Vercel. Create the GitHub repository, push the code, and connect it to Vercel. Make sure the environment variables are configured for the database and auth."
+### Step 9: Build the xWays Engine Logic
 
-Having a live URL early catches deployment issues before they become last-minute emergencies.
+xWays Funnels appear on reels 2, 3, and 4 only. A funnel position can expand to show 2-4 copies of the same symbol, effectively adding extra rows to that reel and increasing the ways count.
 
-### Step 8: Keep Building
+> "Build the xWays Funnel mechanic. On each spin, reels 2, 3, and 4 have a chance for 1-3 positions to become xWays Funnels (roughly 15% chance per position). Each funnel reveals 2-4 copies of a randomly selected symbol. This expands the effective height of that reel -- if a 4-high reel has one funnel that reveals 3 symbols, that reel effectively has 6 positions. The ways calculation must update dynamically: base is 4x4x4x4x4 = 1024 ways, but xWays can push it higher. Build the funnel placement logic, symbol reveal, dynamic ways calculation, and integrate with win evaluation. Write tests for: ways count calculation (no funnels = 1024, one funnel with 3 reveals on reel 2 = 1536 ways, multiple funnels), correct symbol placement in the expanded grid, and win evaluation with expanded reels."
 
-Continue building must-have features. Stay disciplined:
+### Step 10: Animate the Expansion
 
-- **Only build must-have features this week.** Nice-to-haves are next week.
-- **If a feature is taking too long, simplify it.** A working simple version beats a broken complex version.
-- **Commit after every working feature.** Small commits, frequent saves.
-- **Check the deployed version periodically.** Make sure it works on Vercel, not just localhost.
+> "Add animations for xWays Funnels. When a funnel position lands: show a funnel icon that spins and then splits apart, revealing the duplicate symbols. The reel should visually expand -- push other symbols apart to make room, with a smooth Framer Motion layout animation. Display an updated ways counter in the corner of the game (e.g., '1,536 WAYS') that animates when the count changes. The expansion should feel like the grid is stretching to accommodate the extra symbols."
+
+---
+
+## Day 5: Integration and Polish
+
+### Step 11: Make Features Work Together
+
+All four mechanics can occur on the same spin. An xNudge wild can land alongside xWays funnels and a Party Foul trigger. The evaluation order matters:
+
+1. xWays Funnels expand first (changes grid shape)
+2. xNudge Wilds nudge into view (on the expanded grid)
+3. Party Foul events apply (if triggered)
+4. Beer Pong Respin triggers (if two wilds present)
+5. Final win evaluation with all multipliers
+
+> "Review the game engine and ensure all four advanced mechanics work together correctly. The evaluation order should be: xWays expansion, xNudge nudging, Party Foul events, Beer Pong Respin check, then win evaluation. Write integration tests that verify: xWays + xNudge (wild nudges on an expanded reel), Party Foul random wilds + xNudge (random wild triggers Beer Pong if it creates two wilds), and a scenario with all features active simultaneously. Make sure multipliers stack correctly and the ways count reflects all expansions."
+
+### Step 12: Animation Sequencing
+
+> "Build an animation queue system that sequences the feature animations correctly when multiple features trigger on the same spin. The order should match the evaluation order: xWays funnels expand, then xNudge wilds nudge, then Party Foul animates, then Beer Pong Respin plays. Each animation should complete before the next begins. Add a 'skip' button that lets the player jump to the final state. Test with a forced scenario where all features trigger at once."
+
+### Step 13: RTP Verification
+
+> "Run a 100,000-spin simulation with all advanced mechanics active. Calculate the RTP and compare it to the target of 96.09%. Log the frequency of each feature triggering and the average win per feature. If the RTP is off by more than 0.5%, identify which mechanic's payout distribution needs adjustment and suggest corrections."
+
+Commit after the RTP is within tolerance.
 
 ---
 
 ## Acceptance Criteria
 
-By the end of Week 15, your project must meet these requirements:
+By the end of Week 15, the game must have all of these working:
 
-- [ ] **Deployed to Vercel** with a live, working URL
-- [ ] **Built with Next.js, TypeScript, and Postgres** (your standard stack)
-- [ ] **Authentication working** (if your project requires user accounts)
-- [ ] **Core functionality implemented** -- the main thing your app does works
-- [ ] **Data persists** -- if a user creates something, it's there when they come back
-- [ ] **No crashes on basic usage** -- the happy path works without errors
-- [ ] **Code is on GitHub** with meaningful commit history
-
-This is an MVP. It doesn't need to be beautiful. It doesn't need to handle every edge case. It needs to work. Beauty and robustness come next week.
+- [ ] **xNudge Wild** -- The Keg Stand nudges into full view with +1 multiplier per nudge
+- [ ] **Beer Pong Respin** -- Two wilds lock reels between them, remaining reels respin, multipliers combine
+- [ ] **Party Foul events** -- Random trigger (~1/40 spins) with three distinct event types
+- [ ] **xWays Funnels** -- Positions on reels 2-4 expand to show 2-4 matching symbols, ways count updates
+- [ ] **Framer Motion animations** for every mechanic (nudge, respin, reveal, expand)
+- [ ] **Animation sequencing** -- Multiple features on one spin play in correct order with skip option
+- [ ] **All features integrate** -- Mechanics can co-occur and multipliers stack correctly
+- [ ] **Unit tests** for each mechanic's engine logic
+- [ ] **Integration tests** for combined mechanic scenarios
+- [ ] **RTP within tolerance** (96.09% +/- 0.5%) verified by simulation
+- [ ] **Deployed to Vercel** with all features playable on the live site
 
 ---
 
 ## Gut Check
 
-Ask yourself:
+Play 50 spins on the live site. Ask yourself:
 
-- If I showed this to a friend, could they understand what it does?
-- Could they use the core feature without my help?
-- Does it work, even if it's rough around the edges?
+- Do the features feel distinct from each other? Can you tell which mechanic just fired?
+- Does the xNudge multiplier climbing feel exciting?
+- Does a Beer Pong Respin feel like a special moment?
+- When a Party Foul triggers, does it break the rhythm in a good way?
+- Do xWays expansions make the grid feel like it's opening up?
 
-If the answers are yes, you've built a successful MVP. That's a real achievement. Many professional developers struggle to ship an MVP in a week. You just did it by directing an AI.
-
-Next week, you'll make it production-ready.
+If the mechanics feel like four variations of the same thing, the animations need more personality. If they feel distinct and each one gets a reaction, you're in good shape. Next week you build the bonus rounds that tie it all together.

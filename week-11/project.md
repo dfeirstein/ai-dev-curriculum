@@ -1,118 +1,268 @@
-# Project: TeamTask Pro — Dashboard, Admin, and v1 Launch
+# Project: Frat House Frenzy -- Reel UI & v1 Launch
 
-**What you're building:** The admin and analytics layer for TeamTask Pro -- org-level dashboards, admin panel, activity log, and data export. Then you ship v1.
+**What you're building:** The visual reel component for Frat House Frenzy -- 5x4 grid rendering, symbol art, spin and cascade animations, win line highlighting, sound design with Howler.js, an admin dashboard for RTP monitoring, and the v1 launch of a playable slot game.
 
-**Time estimate:** 8-10 hours
+**Time estimate:** 10-12 hours
 
-**What you'll need open:** Ghostty (your terminal) and a web browser
+**What you'll need open:** Ghostty (your terminal) and a web browser.
 
 ---
 
 ## The Brief
 
-TeamTask Pro has all its core features. This week you're adding the layer that makes it manageable at scale: dashboards that show the health of an organization, admin tools for managing members and subscriptions, an activity log for accountability, and data export so users can get their data out.
+Frat House Frenzy has a complete backend: player accounts, Stripe payments, and a provably fair game engine. But right now, the game is just an API -- numbers in, numbers out. This week you bring it to life. You'll build the visual reel grid, animate spinning and cascading symbols, highlight wins, add sound effects, and wire it all to the game engine API.
 
-When you're done, you'll deploy v1 -- the first complete, launchable version of TeamTask Pro.
+You'll also build an admin dashboard for monitoring RTP, player activity, and game health. Then you ship v1 -- a playable slot game with real auth, real payments, provably fair RNG, and real animations.
+
+When you're done, share the URL. This is a real product.
 
 ---
 
 ## Phase 1: Research
 
-Start Claude Code and research the dashboard and admin approach:
+Start Claude Code and research the UI approach:
 
-> "Claude, I have a multi-tenant project management app (TeamTask Pro) with orgs, projects, tasks, members, Stripe subscriptions, and notifications. I want to add an org-level dashboard with charts, an admin panel for managing members and viewing subscription status, an activity log, and CSV data export. What's the best approach? What charting library should we use for Next.js?"
+> "Claude, I need to build a slot machine reel UI in React. The game has a 5x4 grid (5 reels, 4 rows). I need: spinning animation when the player hits spin, symbols landing one reel at a time (left to right), cascade animation where winning symbols disappear and new ones fall in, and win highlighting. What's the best approach? Should I use Framer Motion, CSS animations, or something else?"
 
 Follow up:
 
-> "What aggregation queries will I need for the dashboard? Think about tasks by status, tasks completed over time, and member activity."
+> "Claude, how do professional slot games handle the spinning reel illusion? I want the reels to blur/scroll vertically and then decelerate, landing on the final symbols. What animation technique creates this effect in a web app?"
 
-> "How should the activity log be structured in the database? What events should we track?"
+> "Claude, I want to add sound effects to the game using Howler.js. I need sounds for: spin start, reel stop, small win, big win, cascade, and bonus trigger. How do I manage audio sprites and sync sounds with animations?"
 
-> "What's the simplest way to generate and download CSV files in a Next.js app?"
+> "Claude, how should I structure a game admin dashboard? I need to monitor RTP in real time, track active players, view recent big wins, and see player balance distributions. What charting library works well with Next.js?"
 
 ---
 
 ## Phase 2: Plan
 
-> "Claude, plan the complete admin layer for TeamTask Pro. I need: (1) an org dashboard page with charts showing tasks by status, tasks completed per week, member activity, and project progress, (2) an admin panel with member management (invite, change role, remove), usage stats, and subscription status linked to Stripe, (3) an activity log that records all important actions with filtering, (4) CSV export for tasks, projects, and activity. Plan the database changes, API routes, and UI components."
+> "Claude, plan the complete reel UI and v1 launch for Frat House Frenzy. I need:
+>
+> **Reel Grid Component (5x4):**
+> - 5 columns (reels), 4 rows per reel
+> - Each cell displays a symbol with its art/icon
+> - Dark background with subtle grid lines and neon border
+> - Responsive: works on desktop and mobile
+>
+> **Symbol Rendering:**
+> - Each symbol type has a distinct visual (icon or styled emoji for v1, custom art later)
+> - Low pays (cups): simple colored circles or cup icons
+> - High pays (characters): more detailed icons with character colors
+> - Wild (The Keg): golden glow effect
+> - Scatter (Noise Complaint): pulsing red/blue police light effect
+>
+> **Spin Animation:**
+> - Player clicks Spin -> reels blur and scroll vertically
+> - Reels stop one at a time, left to right, with a slight delay between each
+> - Final symbols land with a subtle bounce
+> - During spin, the Spin button is disabled and shows a loading state
+>
+> **Cascade Animation:**
+> - Winning symbols flash/highlight, then shrink and disappear
+> - Remaining symbols slide down with gravity
+> - New symbols drop in from above with a bounce
+> - Brief pause between cascades for readability
+> - Cascade counter displayed on screen
+>
+> **Win Presentation:**
+> - Winning symbols highlighted with a glow matching their color
+> - Win amount animates up (counting up effect) below the grid
+> - Big wins (10x+): screen shake, larger text, neon flash
+> - Mega wins (50x+): full-screen celebration, particles
+>
+> **Sound Design (Howler.js):**
+> - Spin start: whoosh sound
+> - Reel stop: click/thud for each reel
+> - Small win: coin clink
+> - Medium win: cash register
+> - Big win: bass drop + crowd roar
+> - Cascade: rising pitch chime for each cascade step
+> - Background: lo-fi party ambient (looping, low volume)
+> - Mute toggle in the UI
+>
+> **Game Controls (connect to existing bet system):**
+> - Wire the Spin button to POST /api/game/spin
+> - Pass the current bet amount from the bet selector (built in Week 9)
+> - Display the spin result using the animation pipeline
+> - Auto-spin toggle: spin automatically every N seconds
+> - Turbo mode: skip animations, show results instantly
+>
+> **Admin Dashboard:**
+> - Protected route at /admin (admin users only)
+> - Real-time RTP chart: rolling RTP over last 1,000 / 10,000 / 100,000 spins
+> - Active players count and list
+> - Recent big wins table (player, amount, multiplier, time)
+> - Player balance distribution histogram
+> - Total wagered, total paid, house edge for today / this week / all time
+> - Use a charting library (Recharts)
+>
+> Plan the component hierarchy, animation sequencing, sound triggers, API integration, and admin queries."
 
 Review the plan. Key questions:
 
-- What new database tables or columns are needed (especially for the activity log)?
-- What API routes are needed for aggregation data?
-- How do the charts get their data -- server-side queries or client-side fetching?
-- Who can access the admin panel (admin role only or all members)?
+- What is the animation sequence timeline? (Spin -> stop reels -> check wins -> highlight -> cascade -> repeat)
+- How long does each animation phase take? Is the total reasonable (not too slow, not too fast)?
+- How are sounds synced to animation events?
+- What happens if the player clicks Spin before the previous animation finishes?
+- How does the admin dashboard query RTP efficiently on large datasets?
 
 ---
 
 ## Phase 3: Execute
 
-### Step 1: Activity Log Infrastructure
+### Step 1: Symbol Art and Grid Component
 
-Build the foundation first -- the activity log captures events that feed the dashboard.
+> "Claude, build the reel grid component:
+> 1. A 5x4 grid using CSS Grid, each cell approximately 80x80px on desktop
+> 2. Dark background (#0a0a0a) with subtle neon-blue grid lines
+> 3. Neon border around the entire grid (glow effect)
+> 4. Each symbol rendered as a styled component:
+>    - Red Cup: 🔴 on a red-tinted circle
+>    - Blue Cup: 🔵 on a blue-tinted circle
+>    - White Cup: ⚪ on a white-tinted circle
+>    - Green Cup: 🟢 on a green-tinted circle
+>    - The Pledge: 😰 with a yellow border
+>    - The DJ: 🎧 with a purple border
+>    - Pong King: 🏆 with a gold border
+>    - House Mom: 😎 with a pink border
+>    - Frat President: 👑 with a neon green border
+>    - Wild (The Keg): 🍺 with a golden glow
+>    - Scatter (Noise Complaint): 🚨 with a pulsing red/blue glow
+> 5. The grid accepts a 5x4 array of symbol IDs and renders them
+> 6. Responsive: scales down on mobile
+> Make it look polished -- this is the centerpiece of the game."
 
-> "Claude, create an activity log system for TeamTask Pro. Add an activity_logs table with columns for: organization ID, user ID, action type (created, updated, deleted, completed), target type (task, project, member), target ID, target name, details (JSON for context like 'changed status from open to completed'), and timestamp. Create a utility function that logs activity from anywhere in the app. Hook it into existing API routes so that creating, updating, completing, and deleting tasks and projects automatically creates log entries."
+### Step 2: Spin Animation
 
-Test it:
-- Create a task -- does an activity log entry get created?
-- Complete a task -- does another entry appear?
-- Create a project -- logged?
+> "Claude, add the spin animation to the reel grid:
+> 1. When spin is triggered, each reel column starts a vertical scrolling animation (symbols blurring upward)
+> 2. Reels start spinning left to right with a 100ms delay between each reel
+> 3. Each reel spins for a random duration (0.5-1.5 seconds) before decelerating
+> 4. The final symbols (from the API response) are placed at the landing position
+> 5. Reels stop left to right with a 200ms delay between each
+> 6. Each reel lands with a subtle bounce ease (overshoot then settle)
+> 7. Use Framer Motion's animate and transition for smooth physics-based animation
+> 8. During spin, show a blur overlay on each reel
+> 9. Spin button shows 'Spinning...' and is disabled until all reels stop"
 
-### Step 2: Org-Level Dashboard
+Test:
+- Click spin -- do the reels animate smoothly?
+- Do reels stop one at a time, left to right?
+- Is there a satisfying bounce on landing?
+- Does the spin button re-enable after all reels stop?
 
-> "Claude, build an org dashboard page at /dashboard for TeamTask Pro. Include these sections: (1) Summary cards at the top showing total tasks, completed tasks, active projects, and active members. (2) A bar chart showing tasks by status (open, in progress, completed) across the org. (3) A line chart showing tasks completed per week for the last 8 weeks. (4) A horizontal bar chart showing each member's task completion count for the current month. (5) Project progress cards showing each project's name, task count, and completion percentage as a progress bar. Use a charting library that works well with Next.js. Make the dashboard visually clean with good spacing and consistent colors."
+### Step 3: Cascade Animation
 
-Test it:
-- Does the dashboard load with real data?
-- Do the charts display correctly?
-- Create and complete some tasks -- do the numbers update?
-- Does it look clean and professional?
+> "Claude, add the cascade animation:
+> 1. After the initial spin lands and wins are detected, highlight winning symbols with a glow (1 second)
+> 2. Winning symbols shrink to 0 scale and fade out (0.3 seconds)
+> 3. Remaining symbols in each reel slide down to fill the gaps (0.3 seconds, with gravity easing)
+> 4. New symbols appear at the top of each reel and drop into place (0.3 seconds, with bounce)
+> 5. Check for new wins -- if found, repeat from step 1
+> 6. Display a cascade counter ('Cascade 1', 'Cascade 2', etc.) that increments with each step
+> 7. Pause 0.5 seconds between cascades for readability
+> 8. The cascade data comes from the API response -- each step's grid and wins are pre-calculated
+> Use Framer Motion's AnimatePresence for enter/exit animations."
 
-Give feedback:
+Test:
+- Trigger a spin that produces a cascade (may need to use a test endpoint or mock data)
+- Do winning symbols highlight, then disappear?
+- Do remaining symbols fall down smoothly?
+- Do new symbols drop in from above?
+- Does the cascade counter update?
 
-> "Claude, the charts need better labels. Add axis labels, data point values on the bars, and a legend where appropriate."
+### Step 4: Win Presentation
 
-> "Claude, the summary cards should show a comparison to last week -- like 'Completed: 23 (+5 from last week)' with green for up and red for down."
+> "Claude, build the win presentation system:
+> 1. After each spin/cascade resolves, show the total win amount below the grid
+> 2. Win amount animates with a counting-up effect (0.00 -> final amount over 1 second)
+> 3. Color coding: small wins in white, medium wins (5x+) in neon green, big wins (10x+) in neon pink, mega wins (50x+) in gold
+> 4. For big wins (10x+ bet): add screen shake (subtle CSS transform), larger text, flash the grid border
+> 5. For mega wins (50x+ bet): full-screen overlay with particles (confetti), celebration text, dramatic pause before showing the amount
+> 6. Win amounts persist on screen for 3 seconds after the final cascade, then fade
+> 7. Winning symbols on the final grid keep a subtle pulsing glow until the next spin"
 
-### Step 3: Admin Panel
+### Step 5: Sound Design with Howler.js
 
-> "Claude, build an admin panel at /admin for TeamTask Pro. Restrict access to org admins only -- redirect non-admins to the dashboard. Include: (1) A member management table showing name, email, role, join date, last active date, and actions (change role, remove member). Add an 'Invite Member' button that opens a modal for entering an email and selecting a role. (2) A usage statistics section showing total members vs. plan limit, total projects, total tasks, and storage usage. (3) A subscription section showing the current plan name, billing cycle, next renewal date, and a button that links to the Stripe customer portal for managing the subscription."
+> "Claude, integrate Howler.js for sound effects:
+> 1. Install howler and create a sound manager singleton
+> 2. Load these sounds (use placeholder royalty-free sounds for now):
+>    - spin-start: short whoosh
+>    - reel-stop: mechanical click (play once per reel stopping)
+>    - win-small: coin clink
+>    - win-medium: cash register ding
+>    - win-big: bass drop with crowd
+>    - cascade: rising pitch chime (pitch increases with cascade step)
+>    - bonus-trigger: record scratch
+>    - ambient: lo-fi party background (loop)
+> 3. Sync sounds to animation events:
+>    - Spin button clicked -> play spin-start
+>    - Each reel stops -> play reel-stop
+>    - Win detected -> play appropriate win sound based on size
+>    - Cascade starts -> play cascade sound with increasing pitch
+> 4. Mute/unmute toggle in the game UI (persist preference in localStorage)
+> 5. Volume control slider
+> 6. Sounds should not overlap awkwardly -- manage concurrent audio"
 
-Test it:
-- Can an admin see the admin panel?
+Test:
+- Spin with sound on -- do sounds sync with the animation?
+- Toggle mute -- does it silence everything?
+- Does the ambient loop play continuously?
+- Do cascade sounds increase in pitch?
+
+### Step 6: Connect to Game Engine API
+
+> "Claude, wire the reel UI to the game engine API:
+> 1. Spin button calls POST /api/game/spin with the current bet amount
+> 2. On response, feed the initial grid to the spin animation
+> 3. Feed each cascade step to the cascade animation sequentially
+> 4. Update the balance display after the spin completes
+> 5. Update session stats (total bets, total wins, spin count)
+> 6. Handle errors: if the spin API fails, show an error toast and re-enable the spin button
+> 7. Handle insufficient balance: show a 'Deposit' prompt instead of spinning
+> 8. Display the provably fair info: server seed hash before spin, and a 'Verify' link after
+> 9. Auto-spin mode: after one spin completes, automatically trigger the next (with a toggle to enable/disable)
+> 10. Turbo mode: skip all animations, just show the final grid and total win instantly"
+
+Test the complete flow:
+- Deposit some test funds
+- Hit Spin -- does the full animation play with the real API result?
+- Does the balance update correctly?
+- Does the provably fair hash show before the spin?
+- Try auto-spin -- does it keep going?
+- Try turbo mode -- does it skip animations?
+
+### Step 7: Admin Dashboard
+
+> "Claude, build the admin dashboard at /admin:
+> 1. Restrict access to admin users -- redirect non-admins to the game lobby
+> 2. Summary cards at the top: total players, active sessions now, total wagered today, house edge today
+> 3. RTP chart (Recharts line chart): rolling RTP calculated over the last 1,000 spins, updated every 30 seconds. Show the target line at 96.09%
+> 4. Recent big wins table: last 20 wins over 10x bet, showing player (anonymized), bet amount, win amount, multiplier, timestamp
+> 5. Player balance distribution: histogram showing how many players are in each balance range ($0-10, $10-50, $50-200, $200+)
+> 6. Revenue summary: total deposits, total withdrawals, net revenue -- today, this week, all time
+> 7. Active sessions list: player ID, session duration, spins this session, current balance
+> Style with the dark theme to match the rest of the app. Use neon accent colors for chart lines."
+
+Test:
+- Can an admin see the dashboard?
 - Does a non-admin get redirected?
-- Does the member list show correct data?
-- Does the Stripe portal link work?
+- Do the charts display real data?
+- Does the RTP chart update periodically?
 
-### Step 4: Activity Log Page
+### Step 8: Provably Fair Verification Page
 
-> "Claude, build an activity log page at /activity for TeamTask Pro. Show a reverse-chronological feed of all organization activity. Each entry should display: the user's name, what action they took, what they acted on (with a link to the target if it still exists), and a relative timestamp ('2 hours ago'). Add filters for: time range (today, this week, this month, all time), action type (created, updated, completed, deleted), and specific user. Include pagination -- load 50 entries at a time with a 'Load More' button."
+> "Claude, build a provably fair verification page at /verify:
+> 1. Explain the provably fair system in plain language: what it means, how it works, why the player can trust it
+> 2. Show the player's current client seed with an option to change it
+> 3. Show the current server seed hash (commitment)
+> 4. Verification tool: input fields for server seed, client seed, and nonce
+> 5. Calculate button that reproduces the grid and shows the result
+> 6. Compare against the actual spin result from the database
+> 7. Link to the player's spin history with 'Verify' buttons on each past spin
+> This is the trust layer. It must be clear enough for a non-technical player to understand."
 
-Test it:
-- Does the activity log show real events?
-- Do the filters work correctly?
-- Does pagination work?
-- Are the timestamps accurate?
-
-### Step 5: CSV Data Export
-
-> "Claude, add CSV data export to TeamTask Pro. On the dashboard or a dedicated /export page, add export buttons for: (1) 'Export Tasks' -- downloads all org tasks with columns: task name, project name, status, assignee, created date, completed date, due date. (2) 'Export Projects' -- downloads all org projects with columns: project name, member count, total tasks, completed tasks, completion percentage, created date. (3) 'Export Activity' -- downloads the activity log with columns: date, user, action, target type, target name, details. The CSV should download immediately as a file. Include proper headers and handle special characters in data."
-
-Test it:
-- Download each CSV file
-- Open them in a spreadsheet application (Excel, Google Sheets, Numbers)
-- Verify the data is correct and the columns make sense
-- Check that special characters (commas, quotes in task names) don't break the format
-
-### Step 6: Navigation and Polish
-
-> "Claude, update the TeamTask Pro navigation to include links to Dashboard, Projects, Activity, and Admin (admin-only). Add the current page highlight. Make sure the navigation is consistent across all pages. Add a breadcrumb trail on subpages."
-
-> "Claude, add empty states to the dashboard -- if the org has no tasks yet, show a helpful message with a call to action to create the first project, instead of empty charts."
-
-> "Claude, review the entire app for visual consistency. Make sure spacing, typography, colors, and component styles are consistent across all pages -- dashboard, admin, activity, projects, tasks."
-
-### Step 7: Quality Gates
+### Step 9: Quality Gates
 
 > "Claude, run npm run lint and fix any issues."
 
@@ -120,23 +270,27 @@ Test it:
 
 > "Claude, run npm run build and make sure it completes without errors."
 
-### Step 8: Ship v1
+### Step 10: Ship v1
 
-> "Claude, commit all changes with a clear message about the dashboard and admin layer, push to GitHub, and deploy to Vercel."
+> "Claude, commit all changes with a clear message about the reel UI and v1 launch, push to GitHub, and deploy to Vercel."
 
-After deployment, run through the complete user journey on the live URL:
+After deployment, run through the complete player journey on the live URL:
 
-1. Sign up as a new user
-2. Create an organization
-3. Invite a member (use a second email if possible)
-4. Create a project
-5. Add tasks to the project
-6. Complete some tasks
-7. Check the dashboard -- do the charts reflect your activity?
-8. Check the activity log -- is everything recorded?
-9. Export tasks as CSV -- does the file download correctly?
-10. Visit the admin panel -- does member management work?
-11. Check the subscription section -- does it link to Stripe?
+1. Sign up as a new player
+2. View the game lobby -- dark theme, neon accents, balance display
+3. Deposit test funds via Stripe ($50)
+4. Enter the game -- see the 5x4 grid
+5. Set a bet amount ($1.00)
+6. Hit Spin -- watch the reel animation
+7. If you win, watch the cascade animation and win presentation
+8. Check that sounds play and sync with the animation
+9. Spin several more times -- does the balance update correctly?
+10. Check the provably fair page -- does verification work?
+11. Try a bonus buy (if balance allows)
+12. Check the wallet -- is every transaction recorded?
+13. Visit the admin dashboard -- do the charts show real data?
+14. Check the session history -- are all spins recorded?
+15. Log out and log back in -- is everything persistent?
 
 If everything works, v1 is shipped.
 
@@ -146,17 +300,20 @@ If everything works, v1 is shipped.
 
 Your project is complete when all of these are true:
 
-- [ ] Org-level dashboard shows summary cards, task status chart, weekly completion trend, and member activity
-- [ ] Charts use real data from the database and display correctly
-- [ ] Admin panel is restricted to org admins
-- [ ] Admin panel shows member management with invite, role change, and remove capabilities
-- [ ] Admin panel shows subscription status with link to Stripe customer portal
-- [ ] Activity log records task and project events automatically
-- [ ] Activity log page shows a filterable, paginated feed of org activity
-- [ ] CSV export works for tasks, projects, and activity log
-- [ ] Exported CSV files open correctly in a spreadsheet application
-- [ ] Navigation includes all major sections with proper access control
-- [ ] Empty states are handled gracefully
+- [ ] 5x4 reel grid renders all symbol types with distinct visuals
+- [ ] Spin animation plays with reels stopping left to right
+- [ ] Cascade animation removes winning symbols, drops remaining, fills from top
+- [ ] Win amounts display with counting-up animation and size-based styling
+- [ ] Big wins trigger screen effects (shake, flash, particles for mega wins)
+- [ ] Howler.js sound effects play in sync with animations
+- [ ] Mute toggle and volume control work and persist
+- [ ] Spin button connects to the real game engine API
+- [ ] Balance updates correctly after each spin
+- [ ] Auto-spin and turbo mode work
+- [ ] Provably fair verification page explains the system and allows verification
+- [ ] Admin dashboard shows RTP chart, big wins, player stats, and revenue
+- [ ] Admin dashboard restricted to admin users
+- [ ] Full player journey works end-to-end: signup -> deposit -> play -> verify -> withdraw
 - [ ] `npm run lint` passes
 - [ ] `npm run typecheck` passes
 - [ ] `npm run build` completes without errors
@@ -167,53 +324,55 @@ Your project is complete when all of these are true:
 
 ## Stretch Goals
 
-**Real-Time Dashboard Updates**
-> "Claude, make the dashboard update in real time. When another team member completes a task, the charts should update without refreshing the page. Use server-sent events or polling."
+**Add Custom Symbol Art**
+> "Claude, replace the emoji symbols with custom SVG icons or pixel art. Create a consistent art style: gritty cartoon with neon outlines. Each symbol should be immediately recognizable at the small grid size. Use SVG for crisp rendering at any scale."
 
-**Custom Date Range Picker**
-> "Claude, add a date range picker to the dashboard so users can view metrics for any custom time period, not just preset ranges."
+**Add a Win Replay Feature**
+> "Claude, add the ability to replay any past spin's animation. From the spin history, clicking 'Replay' re-runs the full animation sequence (spin, cascades, win presentation) with the historical data. This is great for sharing big wins."
 
-**PDF Report Generation**
-> "Claude, add a 'Generate Report' button on the dashboard that creates a PDF document with all the current dashboard data, charts included, suitable for sharing with stakeholders."
+**Add Particle Effects**
+> "Claude, add particle effects using tsparticles or a canvas-based system. Gold coins burst from winning symbols. Confetti on big wins. Subtle ambient particles (like dust motes in party lighting) float across the screen during play."
 
-**Role-Based Dashboard Views**
-> "Claude, create different dashboard views based on role. Admins see the full org dashboard. Regular members see a personal dashboard focused on their own tasks, deadlines, and activity."
+**Add Mobile-Optimized Controls**
+> "Claude, optimize the game for mobile play. Stack the bet controls below the grid, make the spin button large and thumb-friendly, add swipe gestures (swipe up to spin), and ensure all animations run smoothly at 60fps on mobile devices."
 
 ---
 
 ## Troubleshooting
 
-**Charts aren't rendering**
-> "Claude, the dashboard charts aren't showing up. Check the charting library installation, the data fetching for the charts, and whether the component is rendering client-side (charts typically need 'use client')."
+**Animations janky or dropping frames**
+> "Claude, the reel animations are stuttering. Check: are we animating expensive CSS properties (width, height) instead of transforms? Switch to transform: translateY() for reel scrolling. Use will-change: transform on animated elements. Reduce the number of simultaneously animated elements."
 
-**Aggregation data is wrong**
-> "Claude, the task count on the dashboard doesn't match what I see in the projects. Check the aggregation queries -- make sure they're scoped to the current organization and using the right filters."
+**Sounds not playing**
+> "Claude, Howler.js sounds don't play. Check: are the sound files loaded before the first spin? Browsers require a user interaction before playing audio -- make sure the first sound plays in response to the Spin button click event, not on page load. Check the browser console for audio context errors."
 
-**CSV download isn't working**
-> "Claude, clicking the export button doesn't download a file. Check the API route for CSV generation, the response headers (should be 'text/csv' with Content-Disposition), and the client-side download trigger."
+**Spin button clickable during animation**
+> "Claude, I can click Spin while the previous spin is still animating, causing overlapping animations. Add a 'spinning' state that disables the button from the moment it's clicked until the entire animation sequence (including all cascades) completes. Check that auto-spin also respects this state."
 
-**Admin panel accessible to non-admins**
-> "Claude, regular members can see the admin panel. Check the role-based access control on the /admin route -- it should check the user's role in the current org and redirect non-admins."
+**Admin dashboard queries too slow**
+> "Claude, the admin dashboard takes forever to load. The RTP calculation is scanning every spin in the database. Add an index on spins.createdAt and use a materialized view or cache for the rolling RTP calculation. For the histogram, use database aggregation instead of fetching all balances to the client."
 
-**Activity log not recording events**
-> "Claude, I created tasks but nothing shows up in the activity log. Check that the activity logging function is being called in the task creation API route, and that the activity_logs table was created in the database."
+**Cascade animation out of sync with data**
+> "Claude, the cascade animation shows the wrong symbols after a cascade step. The animation is using stale grid data. Make sure each cascade step reads from the correct index in the cascade chain array returned by the API. Log the grid state at each step to compare with what's rendered."
 
 ---
 
 ## Reflection
 
-This is v1. A complete, multi-tenant SaaS application with:
+This is v1. A complete, playable, provably fair slot game:
 
-- User authentication with multiple sign-in methods
-- Organization-based multi-tenancy
-- Project and task management
-- Stripe payment integration with subscription tiers
-- Email and in-app notifications
-- Org-level dashboards with data visualization
-- Admin tools for member and subscription management
-- Activity logging and audit trail
-- Data export
+- Player authentication with Better Auth
+- Stripe deposits and withdrawals
+- Provably fair RNG with player-verifiable outcomes
+- 5x4 reel grid with spin and cascade animations
+- Ways-to-win calculation with correct payout math
+- Sound design synced to game events
+- Real-time balance management with full audit trail
+- Admin dashboard with RTP monitoring
+- Deployed and live on Vercel
 
-You directed the construction of all of this. You didn't write the code. You understood the concepts, described what you wanted, verified the output, and shipped it. That's the AI-native builder workflow, and you just used it to build something substantial.
+You directed the construction of all of this. You didn't write the game engine math by hand. You didn't hand-code the animation timelines. You understood the concepts -- provably fair cryptography, ways-to-win calculation, cascading mechanics, payment processing -- described what you wanted, verified the output, and shipped it.
+
+Step back and look at the stack you just built: Next.js, TypeScript, Tailwind, Better Auth, PostgreSQL, Drizzle, Stripe, Howler.js, Framer Motion, Recharts, Sentry, PostHog. These are production tools used by real companies. The game you built uses the same architecture as real online slot platforms.
 
 Take a moment. Share the URL. This is real.

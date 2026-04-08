@@ -37,21 +37,21 @@
   * [Project](week-07/project.md)
   * [Resources](week-07/resources.md)
 
-## Phase 3: SaaS Product <a href="#saas" id="saas"></a>
+## Phase 3: Frat House Frenzy <a href="#fhf" id="fhf"></a>
 
-* [Week 8: TeamTask Pro Foundation](week-08/README.md)
+* [Week 8: FHF Foundation](week-08/README.md)
   * [Guide](week-08/guide.md)
   * [Project](week-08/project.md)
   * [Resources](week-08/resources.md)
-* [Week 9: Payments and Subscriptions](week-09/README.md)
+* [Week 9: Wallet & Payments](week-09/README.md)
   * [Guide](week-09/guide.md)
   * [Project](week-09/project.md)
   * [Resources](week-09/resources.md)
-* [Week 10: Notifications and Email](week-10/README.md)
+* [Week 10: Game Engine](week-10/README.md)
   * [Guide](week-10/guide.md)
   * [Project](week-10/project.md)
   * [Resources](week-10/resources.md)
-* [Week 11: Dashboard and Admin](week-11/README.md)
+* [Week 11: Reel UI & v1 Launch](week-11/README.md)
   * [Guide](week-11/guide.md)
   * [Project](week-11/project.md)
   * [Resources](week-11/resources.md)
@@ -71,13 +71,13 @@
   * [Project](week-14/project.md)
   * [Resources](week-14/resources.md)
 
-## Phase 5: Independence <a href="#independence" id="independence"></a>
+## Phase 5: Level Up <a href="#levelup" id="levelup"></a>
 
-* [Week 15: Choosing Your Own Project](week-15/README.md)
+* [Week 15: Advanced Mechanics](week-15/README.md)
   * [Guide](week-15/guide.md)
   * [Project](week-15/project.md)
   * [Resources](week-15/resources.md)
-* [Week 16: Polish and Shipping](week-16/README.md)
+* [Week 16: Bonus Rounds & Polish](week-16/README.md)
   * [Guide](week-16/guide.md)
   * [Project](week-16/project.md)
   * [Resources](week-16/resources.md)
@@ -85,7 +85,7 @@
   * [Guide](week-17/guide.md)
   * [Project](week-17/project.md)
   * [Resources](week-17/resources.md)
-* [Week 18: The Speed Build](week-18/README.md)
+* [Week 18: Speed Build — Second Game](week-18/README.md)
   * [Guide](week-18/guide.md)
   * [Project](week-18/project.md)
   * [Resources](week-18/resources.md)
@@ -100,6 +100,7 @@
 
 ## Reference <a href="#reference" id="reference"></a>
 
+* [Game Design Brief](reference/game-design-brief.md)
 * [Claude Code Patterns](reference/claude-code-patterns.md)
 * [Stack Guide](reference/stack-guide.md)
 * [Quality Gates](reference/quality-gates.md)
