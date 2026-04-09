@@ -1,199 +1,319 @@
-# Week 10 Guide: Notifications and Email
+# Week 10 Guide: Frat House Frenzy — Game Engine
 
-A great application doesn't wait for you to come back and check it. It tells you when something needs your attention. That's the communication layer: emails that arrive in your inbox, notifications that appear in the app, and the intelligence to know when each one is appropriate.
+Every slot game is, at its core, a machine that transforms a bet into an outcome. You press spin, money goes in, symbols come out, and sometimes money comes back. The game engine is the brain that makes this happen — and it has to be fast, fair, and mathematically sound.
 
----
-
-## Part 1: Transactional Email
-
-### What Transactional Email Is
-
-Transactional emails are triggered by specific events, not marketing campaigns. Every time something happens that a user should know about, the app sends an email automatically.
-
-Common transactional emails in a SaaS:
-
-- **Welcome email.** Sent when a user signs up. Confirms their account and gets them started.
-- **Invitation email.** Sent when someone is invited to join an organization. Contains a link to accept.
-- **Task assignment.** Sent when a task is assigned to you. Tells you what was assigned and by whom.
-- **Password reset.** Sent when a user requests to reset their password. Contains a secure link.
-- **Payment receipt.** Sent when a subscription payment succeeds. Confirms the charge.
-- **Payment failed.** Sent when a payment fails. Prompts the user to update their payment method.
-- **Weekly digest.** A periodic summary of activity in the user's organizations.
-
-The key insight: transactional emails are not spam. They're messages the user expects because they took an action or something happened that affects them. A welcome email is expected after signup. A task notification is expected after assignment. Users want these emails.
-
-### Why Resend
-
-Sending email from an application is deceptively complex. You can't just call a "send email" function and expect it to arrive. Emails go through spam filters, reputation checks, authentication protocols, and delivery infrastructure. Getting all of this right is a full-time job.
-
-Resend handles delivery infrastructure so your emails actually arrive. It provides a simple API: you call it with a recipient, subject, and body, and Resend handles everything else -- delivery, tracking, bounce handling, and compliance.
-
-### React Email
-
-Resend works with React Email, a library that lets you build email templates using React components. This is significant because email HTML is notoriously difficult -- it uses decades-old rendering engines that don't support modern CSS. React Email abstracts this away: you write components, and it generates the compatible HTML.
-
-You don't need to understand React Email's internals. You just need to know that Claude Code can build professional email templates with it, using the same component approach you use for web pages.
-
-### When Directing Claude Code
-
-> "Claude, set up Resend for transactional email. Install the Resend SDK and React Email. Create a reusable email sending utility. Build email templates for: welcome (on signup), invitation (when invited to an org), and task assignment (when assigned a task)."
+This week you build the engine. Not the visuals, not the animations — the math and logic that power every spin.
 
 ---
 
-## Part 2: Email Templates
+## Part 1: What a Game Engine Does
 
-### What Makes a Good Transactional Email
+### The Spin Pipeline
 
-**Clear subject line.** The user should know what the email is about before opening it. "You've been assigned a task: Fix login bug" is better than "New notification."
+When a player clicks "Spin," here's what happens behind the scenes:
 
-**One purpose per email.** Each email should do one thing. The welcome email welcomes. The invitation email invites. Don't combine multiple messages into one email.
+1. **Accept the bet.** Validate the amount ($0.10–$100), check the player's balance, deduct it.
+2. **Generate random numbers.** Create the cryptographically secure randomness that determines the outcome.
+3. **Map to symbols.** Turn those random numbers into a 5×4 grid of symbols (cups, characters, wilds, scatters).
+4. **Evaluate wins.** Check all 1,024 ways for matching symbols. Calculate payouts.
+5. **Handle cascades.** If there were wins, remove those symbols, drop new ones in, evaluate again. Repeat until no more wins.
+6. **Calculate the final payout.** Sum all wins across all cascades, apply multipliers.
+7. **Update the balance.** Credit the winnings to the player's account.
+8. **Return the result.** Send everything back to the client — the grid states, the wins, the payout, the new balance.
 
-**Clear call to action.** Most transactional emails want the user to do something: click a link, view a task, accept an invitation. Make that action obvious with a prominent button.
+All of this happens in milliseconds. The player sees a flashy animation, but the outcome was determined the instant they clicked spin.
 
-**Brief content.** Transactional emails should be scannable in seconds. Subject line, one or two sentences of context, a button, done.
+### Why the Engine Lives on the Server
 
-**Consistent branding.** Use the same colors, logo, and typography as your app. The email should feel like it came from TeamTask Pro, not a generic system.
-
-### The Template Structure
-
-A typical transactional email template has:
-
-1. **Header** -- logo and app name
-2. **Greeting** -- "Hi [name],"
-3. **Body** -- one or two sentences explaining what happened
-4. **Action** -- a button linking to the relevant page in the app
-5. **Footer** -- unsubscribe link, company info, support contact
+The game engine runs entirely on the server. Never on the client. If the game logic ran in the browser, a player could inspect the code, modify it, and give themselves wins. Server-side execution means the player only sees the result — they can't tamper with the process.
 
 ### When Directing Claude Code
 
-> "Claude, create React Email templates for TeamTask Pro. Each template should have a consistent header with the TeamTask Pro logo/name, a greeting, a brief message, a CTA button, and a footer. The design should match the app's color scheme. Build templates for: welcome, invitation, task-assigned, and payment-failed."
+> "Claude, create the game engine module for Frat House Frenzy. It should accept a bet amount, generate an outcome, calculate payouts across cascading wins, and return the full result. All logic runs server-side in Next.js API routes. Use Zod to validate all inputs."
 
 ---
 
-## Part 3: In-App Notifications
+## Part 2: Random Number Generation
 
-### The Bell Icon Pattern
+### Why Math.random() Will Get You Sued
 
-You've seen this in every SaaS product: a bell icon in the navigation bar with a badge showing the number of unread notifications. Click it, and a dropdown shows recent notifications. Click a notification, and you're taken to the relevant page.
+`Math.random()` is JavaScript's built-in random number generator. It's fine for shuffling a playlist or picking a random color. It is absolutely not acceptable for gambling. Here's why:
 
-This pattern is universal because it works. Users understand it instantly. It provides timely information without being intrusive.
+**It's predictable.** `Math.random()` uses a pseudorandom number generator (PRNG) with a deterministic algorithm. If someone knows the internal state, they can predict every future number. Security researchers have demonstrated this attack.
 
-### How In-App Notifications Work
+**It's not auditable.** Gambling regulators require that random number generation be cryptographically secure and verifiable. `Math.random()` provides no way to prove the randomness was fair.
 
-The architecture is straightforward:
+**It's not uniform enough.** For a game where fractions of a percent matter to the math model, `Math.random()` doesn't provide sufficient statistical guarantees.
 
-1. **Something happens** that a user should know about (task assigned, member joined, comment added)
-2. **A notification record is created** in the database (recipient, message, link, read/unread, timestamp)
-3. **The UI shows the notification** -- the bell badge increments, the dropdown shows the new item
-4. **The user reads the notification** -- clicking it marks it as read and navigates to the relevant page
+### Cryptographic RNG
 
-### Notification Data Model
+Node.js provides `crypto.randomBytes()`, which pulls randomness from the operating system's cryptographic random number generator. This is the same source of randomness used for encryption keys, secure tokens, and other applications where predictability would be catastrophic.
 
-A notification needs:
-- **recipientId** -- who should see this notification
-- **type** -- what kind of notification (task_assigned, member_joined, comment_added)
-- **title** -- brief description ("New task assigned")
-- **message** -- the details ("Sarah assigned you 'Fix login bug' in Project Alpha")
-- **link** -- where to go when clicked (/org/acme/projects/alpha/tasks/123)
-- **read** -- boolean, whether the user has seen it
-- **createdAt** -- when it was created
+The difference: `Math.random()` is like rolling dice that someone could have loaded. `crypto.randomBytes()` is like rolling dice in a sealed, audited room with cameras.
+
+For Frat House Frenzy, every spin uses `crypto.randomBytes()` to generate the raw randomness that determines the outcome.
 
 ### When Directing Claude Code
 
-> "Claude, build an in-app notification system. Create a notifications table (recipientId, type, title, message, link, read, createdAt). Add a bell icon to the nav bar with an unread count badge. Add a dropdown that shows recent notifications. Clicking a notification marks it as read and navigates to the link. Add a 'Mark all as read' button."
+> "Claude, create a random number generation module using Node.js crypto.randomBytes(). It should generate a cryptographically secure random value for each spin. Never use Math.random() anywhere in the game logic. Add a utility function that converts random bytes into a number within a specific range (e.g., 0 to 1023) without modulo bias."
 
 ---
 
-## Part 4: Real-Time vs Polling
+## Part 3: Provably Fair Systems
 
-When a new notification is created, how does the user's browser know about it without refreshing the page?
+### The Trust Problem
 
-### Polling
+In a traditional casino, you trust that the slot machine isn't rigged because it's been audited and regulated. Online, there's no physical machine to inspect. How does a player know the game isn't cheating them?
 
-The simplest approach: the browser asks the server "any new notifications?" on a regular interval -- say, every 30 seconds. This is called polling.
+Provably fair is a cryptographic system that lets players verify — mathematically — that the game didn't manipulate their outcome after the fact. It's not a marketing claim. It's a mathematical proof.
 
-Pros: simple to implement, works everywhere.
-Cons: wastes requests when nothing has changed, slight delay before new notifications appear.
+### How It Works
 
-For TeamTask Pro, polling is the right choice. It's simple, reliable, and the delay is negligible for a project management tool.
+The system uses three inputs to generate each spin's outcome:
 
-### Real-Time (Conceptual)
+1. **Server seed.** A secret random value generated by the server before the spin.
+2. **Client seed.** A value the player can set (or a default is generated for them).
+3. **Nonce.** A counter that increments with each spin. Prevents the same seeds from producing the same result.
 
-For comparison, real-time approaches push notifications to the browser instantly:
+Before the spin, the server commits to its seed by publishing a SHA-256 hash of it. The player can see this hash but can't reverse it to get the seed. This is the commitment — the server is locked into its seed before the player spins.
 
-**WebSockets** maintain a persistent connection between the browser and server. The server can push data to the client at any time. Used in chat applications where milliseconds matter.
+After the spin, the system combines all three:
 
-**Server-Sent Events (SSE)** are a lighter-weight alternative. The server keeps a connection open and sends events when they happen.
+```
+HMAC-SHA256(serverSeed, clientSeed + ":" + nonce) → hex string → symbol mapping
+```
 
-These are more complex to implement and to scale. For a project management tool, polling every 30 seconds is perfectly adequate. If you built a chat application, you'd need real-time.
+This produces a deterministic result. Given the same inputs, you always get the same output.
+
+### Why This Matters
+
+After a game session ends (or when the player requests it), the server reveals the actual server seed. Now the player can:
+
+1. Hash the revealed server seed with SHA-256
+2. Confirm it matches the hash they were shown before the spin
+3. Run the HMAC-SHA256 calculation themselves
+4. Verify that the symbols they saw match what the math produces
+
+If the server had changed the seed to manipulate the outcome, the hash wouldn't match. The server is cryptographically locked into the result before the player spins.
 
 ### When Directing Claude Code
 
-> "Claude, use polling to check for new notifications. Every 30 seconds, fetch the unread notification count and update the bell badge. When the user opens the notification dropdown, fetch the recent notifications. Keep it simple -- no WebSockets needed for this use case."
+> "Claude, implement a provably fair system for Frat House Frenzy. Before each game session, generate a server seed and store its SHA-256 hash. Accept an optional client seed from the player. For each spin, compute HMAC-SHA256(serverSeed, clientSeed + ':' + nonce) to determine the outcome. Increment the nonce after each spin. When a session ends, reveal the server seed so the player can verify. Store all seeds and hashes in the database."
 
 ---
 
-## Part 5: Notification Architecture
+## Part 4: Symbol Mapping
 
-Before building, decide what events trigger what notifications. This is a design decision, not a technical one.
+### From Random Number to Reel Symbols
 
-### The Notification Map
+The provably fair system produces a hex string. That hex string needs to become a 5×4 grid of symbols. This is symbol mapping — the translation layer between raw randomness and what the player sees.
 
-For TeamTask Pro:
+### Weighted Selection
 
-| Event | Email | In-App | Recipient |
-|-------|-------|--------|-----------|
-| User signs up | Welcome email | -- | The new user |
-| Invited to org | Invitation email | -- | The invited person |
-| Invitation accepted | -- | "X joined your org" | Org admins and owner |
-| Task assigned | Assignment email | "X assigned you a task" | The assignee |
-| Task status changed | -- | "Task moved to Done" | The task creator |
-| Task due soon | Reminder email | "Task due tomorrow" | The assignee |
-| Payment failed | Payment failed email | "Payment issue" | Org owner |
+Not all symbols appear equally. Low-pay symbols (the solo cups) appear frequently. High-pay symbols (The Frat President) appear rarely. This is controlled by weights.
 
-Not every event needs both email and in-app notification. Some events (like invitation accepted) only need an in-app notification because the recipient is likely already in the app. Others (like invitation sent) only need email because the recipient might not have an account yet.
+Think of it like a raffle drum. If Red Cup has a weight of 30 and Frat President has a weight of 2, it's like putting 30 Red Cup tickets and 2 Frat President tickets in the drum. The random number picks a ticket.
+
+For each position on the 5×4 grid, you:
+1. Take a portion of the hex string (the HMAC output is long enough for all 20 positions)
+2. Convert it to a number
+3. Use that number to pick from the weighted symbol table
+
+Each reel can have different weights. Reel 1 might have more wilds than reel 5, or scatters might only appear on certain reels. The weight tables define the entire feel of the game — how often you see big symbols, how frequently features trigger.
+
+### The Symbol Table for Frat House Frenzy
+
+The symbols, from most common to rarest:
+
+- **Low pays:** Red Cup, Blue Cup, White Cup, Green Cup (0.1x–0.4x per way)
+- **High pays:** The Pledge (1x–1.5x), The DJ (1.5x–2x), The Pong King (2x–3x), The House Mom (3x–5x), The Frat President (5x–8x)
+- **Specials:** Wild (The Keg), xNudge Wild (The Keg Stand), Scatter (The Noise Complaint), Mystery Symbol (Mystery Solo Cup)
 
 ### When Directing Claude Code
 
-> "Claude, here's the notification map for TeamTask Pro: [paste the table above]. Implement a notification service that takes an event type and creates the appropriate notifications (email, in-app, or both) based on this map. This centralizes the notification logic so we don't scatter it across the codebase."
+> "Claude, create a symbol mapping module. Define the symbol table with weights for each reel position. Given a hex string from the provably fair system, map it to a 5×4 grid of symbols using weighted random selection. Each reel should have its own weight table. Make sure wilds can only appear on reels 2-5 and scatters can appear on reels 1, 3, and 5."
 
 ---
 
-## Part 6: Email Deliverability
+## Part 5: Ways-to-Win Calculation
 
-You need to understand deliverability at a high level, even though Resend handles the technical details.
+### Not Paylines — Ways
 
-### Why Emails End Up in Spam
+Traditional slots use paylines — specific patterns drawn across the reels (top-middle-top-middle-top, for example). Frat House Frenzy uses a "ways" system instead, which is simpler to understand and more exciting to play.
 
-Email providers (Gmail, Outlook, etc.) aggressively filter spam. To determine if an email is legitimate, they check:
+### How 1,024 Ways Works
 
-**SPF (Sender Policy Framework).** A DNS record that says "these servers are allowed to send email on behalf of this domain." Without SPF, anyone could send email pretending to be from your domain.
+The base game has a 5×4 grid: 5 reels, each showing 4 symbols. A win occurs when matching symbols appear on consecutive reels starting from reel 1 (leftmost).
 
-**DKIM (DomainKeys Identified Mail).** A cryptographic signature on each email that proves it wasn't tampered with in transit. The recipient's email provider verifies the signature against a public key in your DNS records.
+The math: each reel has 4 positions. If matching symbols appear on all 5 reels, the number of ways is 4 × 4 × 4 × 4 × 4 = 1,024. That's where "1,024 ways" comes from.
 
-**DMARC.** A policy that tells email providers what to do if SPF or DKIM checks fail (reject, quarantine, or accept).
+But you don't need matches on all 5 reels. A match on just 3 consecutive reels (starting from reel 1) still pays. If reel 1 has 2 matching symbols, reel 2 has 1, and reel 3 has 3, that's 2 × 1 × 3 = 6 ways.
 
-### What Resend Handles
+### Calculating a Win
 
-When you use Resend, they handle SPF and DKIM configuration for their sending domain. If you use a custom "from" address (like `notifications@yourdomain.com`), you'll need to add DNS records that Resend provides. This is a one-time setup.
+For each symbol type, check:
+1. How many of that symbol appear on reel 1?
+2. If at least one appears on reel 1, how many appear on reel 2?
+3. Continue through the reels until you find a reel with zero of that symbol.
+4. Multiply the counts across all matched reels — that's the number of ways.
+5. Look up the payout for that symbol at that match length (3-of-a-kind, 4-of-a-kind, or 5-of-a-kind).
+6. Multiply: payout × number of ways × bet size.
 
-The important thing to know: if your emails aren't arriving, the first thing to check is DNS configuration. Resend's dashboard shows you the status of your domain verification.
-
-### Notification Preferences
-
-Users should be able to control what notifications they receive. This is both a good practice and a legal requirement in many jurisdictions.
-
-A simple preferences system:
-- Email notifications: on/off for each type (task assignments, reminders, digests)
-- In-app notifications: generally always on (the user can ignore them)
-- Unsubscribe links in every email
+Wilds (The Keg) substitute for any regular symbol, increasing the number of ways.
 
 ### When Directing Claude Code
 
-> "Claude, add a notification preferences page in user settings. Let users toggle email notifications for each type: task assignments, task reminders, weekly digest, and payment alerts. Respect these preferences when sending emails -- check the user's preferences before sending. Include an unsubscribe link in every email footer."
+> "Claude, implement the ways-to-win evaluation for the 5×4 grid. For each symbol type, count matching symbols on consecutive reels starting from reel 1 (wilds count as matches for everything). Calculate the number of ways by multiplying the counts per reel. Look up the payout value based on symbol and match length. Return all wins with their symbol, match length, ways count, and payout amount."
+
+---
+
+## Part 6: The Cascade (Tumble) Mechanic
+
+### How Cascades Work
+
+When you win, the fun doesn't stop. Winning symbols are removed from the grid, and new symbols drop down to fill the gaps — like Tetris blocks falling. Then the grid is evaluated again. If new wins form, those symbols are removed too, and more drop in. This repeats until a spin produces no wins.
+
+A single spin can cascade 5, 10, even 20+ times. Each cascade is essentially a free re-evaluation with a partially new grid.
+
+### The Cascade Loop
+
+1. Evaluate the grid for wins.
+2. If no wins, the spin is complete.
+3. If there are wins, record them, then remove the winning symbols.
+4. Shift remaining symbols down (gravity). Fill empty positions at the top with new random symbols.
+5. Go back to step 1.
+
+### New Symbols During Cascades
+
+The new symbols that fill empty positions are generated using the same provably fair system. The original HMAC output is long enough (or additional randomness is derived from it) to cover all cascade steps. This ensures cascades are also verifiable.
+
+### Why Cascades Matter for the Game
+
+Cascades create excitement — every win has a chance to chain into more wins. They also affect the math model significantly. A game with cascades has a different hit frequency and payout distribution than a game without them. The cascade mechanic is core to Frat House Frenzy's "escalating chaos" identity.
+
+### When Directing Claude Code
+
+> "Claude, implement the cascade mechanic. After evaluating wins, remove winning symbol positions from the grid. Shift remaining symbols down to fill gaps. Generate new symbols for empty positions at the top using the provably fair RNG. Re-evaluate the grid. Repeat until no wins are found. Track the cascade level (how many times it cascaded) and accumulate total payout across all cascades. Return the full cascade history so the UI can animate each step."
+
+---
+
+## Part 7: Payout Calculation and the Math Model
+
+### How Payouts Work
+
+Each winning combination pays based on three factors:
+
+1. **Symbol value.** Higher-rarity symbols pay more. Red Cup might pay 0.1x for 3-of-a-kind, while Frat President pays 5x for 3-of-a-kind.
+2. **Number of ways.** If there are 6 ways to make a match, the payout is multiplied by 6.
+3. **Multipliers.** Some features add multipliers (the xNudge Wild adds +1 multiplier per nudge, the cascade level might increase a global multiplier during bonus rounds).
+
+Total payout for one win = symbol value × number of ways × bet per way × multiplier.
+
+Total spin payout = sum of all wins across all cascades.
+
+### RTP (Return to Player)
+
+RTP is the percentage of all money wagered that the game returns to players over time. Frat House Frenzy targets 96.09% RTP. This means for every $100 wagered across all players, $96.09 is returned as winnings and $3.91 is the house edge.
+
+RTP is a long-term statistical average. In any given session, a player might win big or lose everything. But over millions of spins, the actual return converges to the target RTP.
+
+### Hit Frequency
+
+Hit frequency is how often a spin produces any win at all. Frat House Frenzy has a 26.3% base game hit frequency — roughly 1 in 4 spins produces a win. This doesn't mean every fourth spin wins; it's random, so you might get 8 wins in a row or 15 losses in a row.
+
+### Volatility
+
+Volatility describes how the wins are distributed. Frat House Frenzy is rated 10/10 — extreme volatility. This means:
+
+- Most spins win nothing or very little.
+- Occasionally, a spin produces a massive payout (up to 42,069x the bet).
+- Long dry spells are normal. Huge wins are rare but dramatic.
+
+High volatility = exciting but risky. Low volatility = steady but boring. Frat House Frenzy is designed for thrill-seekers.
+
+### Why the Math Model Matters
+
+The math model defines the game's personality. Every weight in the symbol table, every payout value, every cascade multiplier — they all feed into the RTP, hit frequency, and volatility. Change one number and the entire model shifts.
+
+This is why you test the math model with simulations: run millions of spins and verify that the actual RTP matches the target. If it doesn't, the weights or payouts need adjustment.
+
+### When Directing Claude Code
+
+> "Claude, create the payout calculation module. Define payout tables for each symbol at each match length (3, 4, and 5 of a kind). Calculate total payout per spin including all cascades and multipliers. Also create a simulation script that runs 1 million spins and reports: actual RTP, hit frequency, average win, max win, and cascade depth distribution. We need to verify the math model matches our target of 96.09% RTP."
+
+---
+
+## Part 8: The /spin API Endpoint
+
+### Bringing It All Together
+
+The game engine is a collection of modules — RNG, symbol mapping, win evaluation, cascades, payouts. The `/spin` endpoint is the API route that orchestrates them into a single request/response cycle.
+
+### The Request
+
+```
+POST /api/game/spin
+{
+  "betAmount": 1.00,
+  "clientSeed": "player-chosen-seed"  // optional
+}
+```
+
+Validated with Zod: betAmount must be between 0.10 and 100, in valid increments.
+
+### The Response
+
+```json
+{
+  "spinId": "abc123",
+  "betAmount": 1.00,
+  "initialGrid": [["RedCup", "DJ", "Wild", "Pledge"], ...],
+  "cascades": [
+    {
+      "level": 0,
+      "grid": [["RedCup", "DJ", "Wild", "Pledge"], ...],
+      "wins": [
+        { "symbol": "DJ", "matchLength": 3, "ways": 4, "payout": 6.00 }
+      ],
+      "removedPositions": [[0,1], [1,2], [2,1]],
+      "payout": 6.00
+    },
+    {
+      "level": 1,
+      "grid": [["Pledge", "PongKing", "Cup", "FratPres"], ...],
+      "wins": [],
+      "removedPositions": [],
+      "payout": 0
+    }
+  ],
+  "totalPayout": 6.00,
+  "newBalance": 105.00,
+  "serverSeedHash": "a1b2c3...",
+  "nonce": 42
+}
+```
+
+### The Pipeline Inside the Endpoint
+
+1. Authenticate the player (from the session).
+2. Validate the bet (Zod schema).
+3. Check and deduct balance (database transaction).
+4. Get or create the provably fair session (server seed, client seed, nonce).
+5. Generate the outcome (HMAC → symbol mapping → grid).
+6. Evaluate wins and cascades (loop until no wins).
+7. Calculate total payout.
+8. Credit winnings to balance (same database transaction).
+9. Log the spin (for audit, RTP monitoring, provably fair verification).
+10. Return the result.
+
+Steps 3 through 8 happen inside a single database transaction. If anything fails, the whole thing rolls back — the player's money is never lost to a crash.
+
+### When Directing Claude Code
+
+> "Claude, create the /api/game/spin endpoint. It should authenticate the player, validate the bet with Zod, run the full spin pipeline (RNG → symbols → wins → cascades → payout), update the balance in a database transaction, log the spin for provably fair verification, and return the full result including all cascade steps. If anything fails, roll back the transaction."
 
 ---
 
 ## What's Next
 
-Head to [project.md](project.md) to add notifications and email to TeamTask Pro.
+Head to [project.md](project.md) to build the game engine for Frat House Frenzy.

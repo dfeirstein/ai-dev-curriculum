@@ -1,222 +1,265 @@
-# Week 13 Guide: Monitoring and Analytics
+# Week 13 Guide: Frat House Frenzy — Monitoring & Analytics
 
-Your application is deployed. People can use it. But you're flying blind. Right now, if an error happens in production, you don't know about it unless a user complains. If a feature is confusing and nobody uses it, you have no way to tell. If the signup flow is broken on Safari, you might not discover that for weeks.
+Your game is deployed. Players can sign up, deposit real money, and spin the reels. But you're flying blind. If the payout calculation breaks at 2am, you won't know until your bankroll is drained or players start posting angry reviews. If nobody triggers the bonus round because the scatter frequency is wrong, you have no way to tell. If the game crashes on Android Chrome, you might not discover that for weeks.
 
-This week you add two kinds of visibility: monitoring (is the application working?) and analytics (how are people using it?). These are different questions with different tools.
-
----
-
-## Part 1: Why Monitoring Matters
-
-### The Invisible Failures
-
-In development, you see every error. It appears in your terminal, in your browser console, on the page itself. In production, errors happen on someone else's computer, in a browser you don't have, at 3am when you're asleep.
-
-Without monitoring, here's what happens:
-1. A user encounters an error
-2. They get frustrated
-3. They leave
-4. You never find out
-
-With monitoring, here's what happens:
-1. A user encounters an error
-2. Sentry captures it with full context
-3. You get notified
-4. You fix it before the next user hits it
-
-The difference is the difference between a professional product and a demo.
-
-### What "Monitoring" Means
-
-Monitoring answers: **Is my application working correctly right now?**
-
-It's not about performance metrics or user behavior. It's about errors, crashes, and failures. When something goes wrong in production, monitoring tells you immediately -- what broke, where it broke, which users were affected, and what they were doing when it happened.
+This week you add two kinds of visibility: monitoring (is the game working?) and analytics (how are players using it?). For a game with real money, both are non-negotiable.
 
 ---
 
-## Part 2: Sentry Deep Dive
+## Part 1: Why Monitoring Matters More for a Game
 
-### Error Tracking
+### The Cost of Invisible Failures
 
-Sentry's core job is catching errors. When an exception occurs anywhere in your application -- client-side in the browser, server-side in an API route, in a background job -- Sentry captures it and sends a report.
+In a SaaS app, an undetected error means a user can't complete a task. Annoying, but nobody loses money. In Frat House Frenzy, an undetected error can mean:
+
+1. **Payout calculation bug** -- Players receive 10x what they should. Your bankroll hemorrhages.
+2. **Balance mutation error** -- A win is credited twice. Or not credited at all.
+3. **RNG failure** -- The random number generator falls back to a default, producing predictable or biased outcomes.
+4. **Provably fair break** -- The seed commitment doesn't match the revealed seed. Players can't verify their spins. Trust is destroyed.
+
+Every one of these is a financial or legal problem. In a SaaS app, you fix bugs when users report them. In a game with real money, you need to know about bugs before players do.
+
+### What "Monitoring" Means for a Game
+
+Monitoring answers: **Is my game engine working correctly right now?**
+
+It's not about page views or user counts. It's about errors, crashes, and failures in the systems that handle money. When something goes wrong in production, monitoring tells you immediately -- what broke, where it broke, which players were affected, and what they were doing when it happened.
+
+---
+
+## Part 2: Sentry for Error Tracking
+
+### Why Sentry
+
+Sentry catches errors wherever they happen -- in the browser during animation rendering, in API routes during spin processing, in background jobs during balance reconciliation. Each error report includes context that makes it actionable.
+
+### What to Track with Sentry in Frat House Frenzy
+
+**Game engine errors.** Any exception in the spin pipeline: RNG generation, symbol mapping, payout calculation, balance mutation. These are the most critical errors in the system. A TypeError in the payout function isn't just a bug -- it's a financial incident.
 
 Each error report includes:
 - **The error message and stack trace** -- What went wrong and where in the code
-- **Browser and OS information** -- What device and browser the user was on
-- **User context** -- Which user was affected (if you configure user identification)
-- **Breadcrumbs** -- A timeline of events leading up to the error (page navigations, button clicks, API calls)
-- **Request data** -- For server errors, the URL, method, headers, and body of the request that triggered the error
+- **Player context** -- Which player was affected, their current balance, the bet amount
+- **Spin context** -- The server seed, client seed, nonce, and resulting symbols (for debugging the exact spin that failed)
+- **Breadcrumbs** -- A timeline of events leading up to the error (deposit, bet placed, spin started, cascade triggered, error)
+- **Request data** -- The full API request that triggered the error
 
-This context is what makes Sentry valuable. "TypeError: Cannot read property 'name' of undefined" is useless on its own. "TypeError: Cannot read property 'name' of undefined -- on the task detail page, for user alice@example.com, after she clicked 'Mark Complete' on a task that was already deleted" -- that's actionable.
+**Payment failures.** Any error in the Stripe integration: failed deposits, failed withdrawals, webhook processing errors. Money going in and out of the system must be tracked meticulously.
+
+**API errors.** Any 500-level response from your API routes. These indicate server-side failures that players experience as "something went wrong."
 
 ### Source Maps
 
-When your Next.js application is deployed, the code is compiled, minified, and bundled. An error in production says "error at line 1, column 47823 of chunk-abc123.js." That tells you nothing.
+When your Next.js application is deployed, the code is compiled and minified. A production error says "error at line 1, column 47823 of chunk-abc123.js." That tells you nothing.
 
-Source maps are files that map the compiled code back to your original source files. With source maps configured, Sentry shows you "error at line 42 of src/app/api/tasks/route.ts" -- the exact file and line in your actual code.
+Source maps map compiled code back to your original source files. With source maps configured, Sentry shows "error at line 42 of src/lib/game-engine/payout.ts" -- the exact file and line in your actual code. Without source maps, production errors are nearly useless.
 
-Without source maps, production errors are nearly useless. With them, you can jump straight to the problem.
+### Alerts That Matter
 
-### Alerts
+Not all errors are equal. Configure Sentry alerts by severity:
 
-Sentry can notify you when errors happen. You configure alert rules:
-- **First occurrence** -- Get notified the first time a new error type appears
-- **Frequency** -- Get notified when an error occurs more than N times in a time window
-- **Regression** -- Get notified when an error you previously resolved comes back
+- **Critical (immediate notification):** Any error in payout calculation, balance mutation, or RNG generation. Any Stripe webhook failure. These need immediate attention.
+- **High (within an hour):** API route 500 errors, authentication failures, database connection issues.
+- **Medium (daily digest):** Client-side rendering errors, animation failures, non-critical UI bugs.
 
-Alerts can go to email, Slack, or other channels. The goal is knowing about production problems quickly, not checking a dashboard every hour.
+The goal is knowing about money-related problems in minutes, not hours. A payout bug running unchecked for an hour can cost thousands.
 
 ### Release Tracking
 
-Sentry can correlate errors with deploys. When you deploy a new version, you tell Sentry "this is release v1.2.3." If new errors start appearing after that release, Sentry highlights the connection. This helps you answer: "Did our last deploy break something?"
+Sentry correlates errors with deploys. When you deploy a new version, Sentry tracks whether new errors appear. If payout errors spike after a deploy, you know exactly which release caused it and can roll back immediately.
 
-Release tracking also enables the concept of "resolving" errors. You fix a bug, deploy, and mark the error as resolved. If it comes back in a future release, Sentry alerts you that it regressed.
+This is especially important for a game. A SaaS app with a bug is embarrassing. A game with a payout bug is an emergency.
 
 ---
 
-## Part 3: PostHog Deep Dive
+## Part 3: PostHog for Player Analytics
 
-### What Analytics Means
+### What Analytics Means for a Game
 
-Analytics answers a different question than monitoring. Monitoring asks "is it working?" Analytics asks "how is it being used?"
+Analytics answers: **How are players interacting with the game?**
 
-Product analytics tells you:
-- Which features people use (and which they ignore)
-- Where people get stuck or confused
-- How users progress through your application
-- Whether changes you make improve or worsen the user experience
+For Frat House Frenzy, this means understanding:
+- How players progress from signup to their first spin
+- What bet sizes players prefer
+- How often bonus rounds trigger in practice
+- Whether players use the provably fair verification feature
+- Where players drop off (deposit but never spin? spin but never deposit more?)
+- How long play sessions last
 
-### Event Tracking
+### Event Tracking for a Slot Game
 
-PostHog tracks events -- specific user actions. Each event has a name and optional properties:
+PostHog tracks events -- specific player actions. Each event has a name and properties:
 
-- **Event:** `task_created`
-  **Properties:** `project_name`, `has_due_date`, `has_assignee`
+- **Event:** `spin_completed`
+  **Properties:** `bet_amount`, `win_amount`, `win_multiplier`, `is_bonus_spin`, `grid_size`, `cascade_count`
 
-- **Event:** `signup_completed`
-  **Properties:** `signup_method` (email or oauth), `referral_source`
+- **Event:** `bonus_triggered`
+  **Properties:** `scatter_count`, `bonus_type` (Party/Darty/Full Send), `trigger_method` (natural/buy)
 
-- **Event:** `subscription_upgraded`
-  **Properties:** `from_plan`, `to_plan`, `billing_cycle`
+- **Event:** `deposit_completed`
+  **Properties:** `amount`, `payment_method`, `is_first_deposit`
 
-Events are the raw data. Everything else in PostHog (funnels, trends, cohorts) is built on top of events.
+- **Event:** `withdrawal_requested`
+  **Properties:** `amount`, `player_lifetime_deposits`, `player_lifetime_wins`
 
-### Funnels
+- **Event:** `provably_fair_verified`
+  **Properties:** `spin_id`, `verification_result` (pass/fail)
 
-A funnel shows you how users progress through a sequence of steps. For TeamTask Pro:
+- **Event:** `bonus_buy_clicked`
+  **Properties:** `buy_tier` (80x/200x/500x/69x), `player_balance`
+
+Events are the raw data. Everything else in PostHog -- funnels, trends, cohorts -- is built on top of events.
+
+### Custom Game-Specific Metrics
+
+Beyond standard events, track metrics unique to a slot game:
+
+**Session metrics:**
+- Average session duration
+- Spins per session
+- Total wagered per session
+- Net result per session (win/loss)
+
+**Feature engagement:**
+- How many players edit their client seed (provably fair engagement)
+- How many players use bonus buy vs. waiting for natural triggers
+- Which bet amounts are most popular
+- Average cascade depth (do cascades work as designed?)
+
+**Financial metrics:**
+- Gross Gaming Revenue (GGR) = total bets - total wins
+- Average Revenue Per User (ARPU)
+- Player lifetime value
+- Deposit-to-first-spin time
+
+### Direction for Claude Code
+
+> "Set up PostHog event tracking for the game. Track these events: spin_completed (with bet, win amount, multiplier, cascade count), bonus_triggered (with scatter count, bonus type), deposit_completed (with amount, is_first_deposit), and provably_fair_verified (with result). Make sure events fire after the action completes successfully, not before."
+
+---
+
+## Part 4: Real-Time RTP Monitoring
+
+### Why RTP Monitoring Is Critical
+
+Your game targets 96.09% RTP. In theory, the math model guarantees this. In practice, bugs happen. A subtle error in the cascade payout logic could shift the RTP to 98%, quietly bleeding your bankroll. Or to 90%, quietly cheating players.
+
+Real-time RTP monitoring tracks actual payouts vs. expected payouts and alerts you when something drifts.
+
+### How It Works
+
+Track two running totals:
+1. **Total wagered** -- Sum of all bets placed
+2. **Total paid out** -- Sum of all payouts (including bonus wins)
+
+Calculate: **Actual RTP = total paid out / total wagered**
+
+Over short periods (hundreds of spins), RTP will fluctuate wildly -- that's normal variance, especially with extreme volatility. Over longer periods (thousands of spins), it should converge toward 96.09%.
+
+### Alert Thresholds
+
+Set up alerts for when actual RTP deviates beyond expected variance:
+
+- **Over 10,000 spins:** Alert if RTP is outside 93%-99% (wide band, high variance expected)
+- **Over 100,000 spins:** Alert if RTP is outside 95%-97% (tighter band)
+- **Over 1,000,000 spins:** Alert if RTP is outside 95.5%-96.7% (should be very close)
+
+If you get an alert at the 1,000,000-spin level, something is almost certainly wrong in the math. Investigate immediately.
+
+### PostHog Dashboard
+
+Create a PostHog dashboard that shows:
+- Rolling RTP over the last 1,000 / 10,000 / 100,000 spins
+- Daily GGR trend
+- Bonus trigger rate (actual vs. expected 1-in-195)
+- Hit frequency (actual vs. expected 26.3%)
+- Maximum win achieved to date
+
+This dashboard is your cockpit. Check it daily. Any metric drifting from its expected value is an early warning sign.
+
+---
+
+## Part 5: Player Funnels
+
+### The Player Journey
+
+A funnel shows how players progress through a sequence of steps:
 
 ```
-Signup → Create Org → Create Project → Create Task → Complete Task
-  100%      72%          58%              41%           23%
+Signup → First Deposit → First Spin → 10th Spin → Bonus Round → Second Deposit
+ 100%      64%             58%          31%          12%            8%
 ```
 
-This tells a story: 100 people sign up, but only 23 actually complete a task. Where are they dropping off? Between "Create Org" and "Create Project" you lose 14% -- maybe the project creation flow is confusing. Between "Create Task" and "Complete Task" you lose 18% -- maybe people create tasks but never come back.
+This tells a story: 100 people sign up, but only 8 make a second deposit. Where are they dropping off?
 
-Funnels turn guesses into data. Instead of "I think the onboarding is fine," you know "42% of users never create their first project."
+- **Signup → First Deposit (36% drop)** -- Are players creating accounts but not depositing? Maybe the deposit flow is confusing, or the minimum deposit is too high.
+- **First Spin → 10th Spin (27% drop)** -- Players try the game but don't stick. Is the base game engaging enough? Are wins too rare early on?
+- **10th Spin → Bonus Round (19% drop)** -- Players leave before experiencing the bonus. The bonus trigger rate of 1-in-195 means many players won't see it in a short session.
 
-### Feature Flags
+Funnels turn guesses into data. Instead of "I think the onboarding is fine," you know "36% of signups never deposit."
 
-Feature flags let you control which users see which features, without deploying new code. You wrap a feature in a flag, and PostHog decides at runtime whether to show it.
+### Key Funnels for Frat House Frenzy
 
-Use cases:
-- **Gradual rollout** -- Release a new dashboard design to 10% of users first. If metrics are good, increase to 50%, then 100%.
-- **Beta features** -- Give early access to specific users or organizations.
-- **Kill switch** -- If a new feature causes problems, disable it instantly without deploying.
-- **A/B testing** -- Show version A to half your users and version B to the other half. Measure which performs better.
-
-Feature flags are how production teams ship safely. Instead of deploying to everyone and hoping for the best, you deploy to a small group, verify it works, and gradually expand.
-
-### Session Replay
-
-Session replay records what users see and do. You can watch a recording of a user's session: every page they visited, every button they clicked, every form they filled out, every error they saw.
-
-This is incredibly powerful for understanding user experience. When your funnel shows a drop-off at the project creation step, you can watch session replays of users at that step and see exactly what confused them. Did they not find the button? Did they fill out the form wrong? Did the page error out?
-
-Session replay is also invaluable for debugging. When a user reports "it doesn't work," you can watch their session and see exactly what happened.
+1. **Acquisition funnel:** Landing page → Signup → Email verified → First deposit
+2. **Activation funnel:** First deposit → First spin → First win → 10th spin
+3. **Bonus funnel:** First spin → Bonus triggered → Bonus completed → Post-bonus deposit
+4. **Retention funnel:** Day 1 active → Day 7 active → Day 30 active
 
 ---
 
-## Part 4: Defining a Tracking Plan
+## Part 6: Session Replay
 
-### What a Tracking Plan Is
+### What It Is
 
-A tracking plan is a document that lists every event you'll track, what properties each event includes, and why you're tracking it. You define this BEFORE implementing analytics.
+Session replay records what players see and do. You can watch a recording of a player's session: every page they visited, every button they clicked, every spin result they saw, every time they hesitated.
 
-Why plan first? Because adding random events without a plan leads to messy, unusable data. You end up with 200 events, half of which are redundant, and you still can't answer the questions that matter.
+### Why It Matters for a Game
 
-### The Questions-First Approach
+Session replay answers questions that analytics can't:
 
-Start with the questions you want to answer:
+- **"Why do players leave after 5 spins?"** Watch their sessions. Maybe they're confused by the cascade mechanic. Maybe the bet selector is hard to use on mobile. Maybe they hit a losing streak and the UI doesn't show enough feedback.
+- **"Why don't players verify their spins?"** Watch sessions of players who won big. Did they notice the verification option? Is the button visible? Is the verification page confusing?
+- **"Is the bonus round understandable?"** Watch a player experience their first bonus. Did they know what was happening? Did the UI explain the escalation system? Did they realize the grid was expanding?
 
-1. **Are people signing up and onboarding successfully?**
-   Events: `signup_started`, `signup_completed`, `org_created`, `first_project_created`, `first_task_created`
+### Debugging Player Reports
 
-2. **Which features are people using?**
-   Events: `task_created`, `task_completed`, `project_created`, `dashboard_viewed`, `csv_exported`, `member_invited`
+When a player reports "I won but didn't get paid," session replay is invaluable. You can watch exactly what happened: what they saw on screen, what the spin result showed, whether the balance updated. Combined with Sentry error tracking and the provably fair log, you can reconstruct the entire incident.
 
-3. **Are paid features driving upgrades?**
-   Events: `paywall_shown`, `upgrade_started`, `upgrade_completed`, `subscription_canceled`
+### Privacy Considerations
 
-4. **Where do people get stuck?**
-   Events: `error_shown`, `form_abandoned`, `help_clicked`
-
-### Tracking Plan for TeamTask Pro
-
-Here's the tracking plan you'll implement:
-
-| Event | Properties | Why |
-|-------|-----------|-----|
-| `signup_completed` | method (email/oauth) | Measure signup conversion |
-| `org_created` | member_count | Track onboarding progress |
-| `project_created` | org_id | Measure feature adoption |
-| `task_created` | has_due_date, has_assignee, project_id | Understand task creation patterns |
-| `task_completed` | time_to_complete, project_id | Measure productivity |
-| `member_invited` | role | Track team growth |
-| `dashboard_viewed` | - | Measure dashboard engagement |
-| `csv_exported` | export_type (tasks/projects/activity) | Measure data export usage |
-| `subscription_upgraded` | from_plan, to_plan | Track revenue events |
-| `subscription_canceled` | reason (if collected) | Understand churn |
-| `paywall_shown` | feature_name | Measure upgrade triggers |
-
-### What Not to Track
-
-Not everything should be an event. Don't track:
-- Every page view (PostHog captures these automatically)
-- Every keystroke or mouse movement (this is surveillance, not analytics)
-- Personally identifiable information beyond what's necessary (no tracking email contents, personal notes, etc.)
+For a game with real money, be thoughtful about what you record:
+- **Do record:** Game interactions, navigation, clicks, spin results, UI state
+- **Don't record:** Payment form inputs (Stripe handles this securely), personal account details
+- **Be transparent:** Tell players in your privacy policy that you use session replay for improving the game experience
+- **Respect opt-out:** Give players the ability to disable session recording
 
 ---
 
-## Part 5: Privacy -- What to Track vs. What's Creepy
+## Part 7: Performance Monitoring
 
-### The Line
+### Why Speed Matters for a Game
 
-Analytics exist to improve the product. They should answer "how can we make this better?" not "what is this specific person doing?"
+A slot game is an entertainment product. If the spin takes 2 seconds to process, the experience feels sluggish. If the cascade animation stutters, the excitement dies. Players expect near-instant feedback.
 
-Good tracking:
-- "47% of users complete onboarding within 24 hours"
-- "The CSV export feature is used by 12% of active orgs"
-- "Users who invite at least 2 members are 3x more likely to upgrade"
+### What to Monitor
 
-Creepy tracking:
-- Recording everything a user types in task descriptions
-- Tracking exactly how long someone stares at each page
-- Correlating user behavior with personal demographics without consent
+**Spin response time.** How long from the player clicking "Spin" to the server returning the result? This should be under 200ms. If it spikes, investigate -- maybe the payout calculation has a performance bug, or the database query is slow.
 
-### Practical Guidelines
+**Animation frame rate.** The reel spin, cascade, and win animations should run at 60fps. Dropped frames make the game feel cheap. Monitor frame rate in the browser and alert on sustained drops below 30fps.
 
-1. **Only track actions, not content.** Track that a task was created, not what was written in it.
-2. **Aggregate, don't individualize.** Care about patterns across users, not individual behavior.
-3. **Be transparent.** If you track analytics, say so in your privacy policy.
-4. **Respect opt-out.** Give users the ability to opt out of analytics. PostHog supports this.
-5. **Minimize properties.** Only include event properties that help answer your questions. More data isn't better if it's not useful.
+**Time to interactive.** How long does the game take to load and become playable? Players who wait more than 3 seconds for a game to load will leave. Optimize the initial load: lazy-load sound files, defer non-critical assets, use Next.js Image optimization for symbol sprites.
 
-### Legal Considerations
+**API error rate.** What percentage of spin requests result in errors? Even 0.1% is concerning at scale -- that's 1 error per 1,000 spins. Track and trend this over time.
 
-Different jurisdictions have different privacy laws (GDPR in Europe, CCPA in California). The practical takeaway: tell users what you collect, let them opt out, and don't collect more than you need. For a project like TeamTask Pro, staying on the right side of privacy is straightforward if you follow the guidelines above.
+### Lighthouse for the Game Page
+
+Run Lighthouse audits on your game page. Target 90+ on Performance, Accessibility, and Best Practices. Pay special attention to:
+- **LCP (Largest Contentful Paint):** The game grid should render quickly
+- **INP (Interaction to Next Paint):** Clicking "Spin" should feel instant
+- **CLS (Cumulative Layout Shift):** Nothing should jump around as assets load
 
 ---
 
 ## What's Next
 
-Head to [project.md](project.md) to instrument TeamTask Pro with Sentry and PostHog.
+Head to [project.md](project.md) to instrument Frat House Frenzy with Sentry and PostHog.

@@ -1,265 +1,345 @@
-# Week 11 Guide: Dashboard and Admin
+# Week 11 Guide: Frat House Frenzy — Reel UI & v1 Launch
 
-TeamTask Pro has users, organizations, projects, tasks, payments, and notifications. That's a lot of moving parts. But right now, nobody can see the big picture. An org owner can't answer basic questions: How many tasks did the team complete this week? Who's most active? Which projects are falling behind? Is our subscription being used?
+Last week you built the brain — the game engine that transforms a bet into a provably fair outcome. This week you build the body: the visual experience that makes spinning feel like a party. Reels that spin and stop left to right, symbols that cascade and explode, sounds that thump and build, and a dashboard that watches the math in real time.
 
-Dashboards answer these questions at a glance. Admin panels let org owners manage their team. Activity logs provide accountability. Data export gives users control over their own data.
-
-This is the layer that separates a toy from a product.
+By the end of this week, Frat House Frenzy is playable. Not "demo playable" — actually playable. Authenticated, funded, provably fair, and animated. That's v1.
 
 ---
 
-## Part 1: Dashboard Design -- What Metrics Matter
+## Part 1: Building the Reel Grid with React
 
-### The Purpose of a Dashboard
+### The Grid Component
 
-A dashboard exists to answer questions without making people dig. When an org owner opens TeamTask Pro, they should immediately understand the health of their organization.
+The game UI centers on a 5×4 grid of symbols. Each cell shows a symbol — a cup, a character, a wild, a scatter. The grid component is the most important visual element in the entire game.
 
-The biggest mistake in dashboard design is showing everything. More data is not better. Better data is better. A dashboard with 30 metrics is a spreadsheet. A dashboard with 5 well-chosen metrics is a command center.
+At rest, the grid is static: 20 symbols arranged in 5 columns and 4 rows. During a spin, the reels animate. After the spin resolves, winning symbols highlight and cascade.
 
-### Choosing Metrics
+### Thinking in Components
 
-For a project management tool like TeamTask Pro, the metrics that matter fall into three categories:
+Break the UI into a component hierarchy:
 
-**Progress metrics** -- Are we getting things done?
-- Tasks completed this week/month
-- Tasks by status (open, in progress, completed)
-- Project completion percentage
+- **GameScreen** — The full game view. Contains the reel grid, bet controls, balance display, and win display.
+- **ReelGrid** — The 5×4 grid container. Manages the layout of all reels.
+- **Reel** — A single column of 4 symbols. Each reel handles its own spin animation.
+- **SymbolCell** — A single symbol position. Displays the symbol image/icon, handles highlight states (normal, winning, removing).
+- **BetControls** — Bet amount selector, spin button, auto-spin toggle, turbo mode toggle.
+- **BalanceDisplay** — Shows current balance and last win amount.
+- **WinDisplay** — Shows win announcements ("BIG WIN — 50x!") with animations.
 
-**Activity metrics** -- Is the team engaged?
-- Active members (who logged in or made changes recently)
-- Tasks created vs. tasks completed (is work piling up or getting done?)
-- Recent activity (what happened today/this week)
+### Symbol Rendering
 
-**Health metrics** -- Are there problems?
-- Overdue tasks (things past their deadline)
-- Stalled projects (no activity in X days)
-- Subscription status (are we on a plan that fits our usage?)
+Each symbol needs a visual representation. For v1, this can be illustrated icons or styled text/emoji placeholders — the art can be refined later. What matters is that each symbol is visually distinct and recognizable at a glance.
 
-### The Key Question Test
-
-Before adding any metric to a dashboard, ask: "What decision would someone make based on this number?" If the answer is "nothing" or "I don't know," the metric doesn't belong on the dashboard.
-
-- "Tasks completed this week: 47" -- Decision: The team is productive. Stay the course.
-- "Tasks overdue: 12" -- Decision: Something is stuck. Let's look at which projects are behind.
-- "Average task age: 4.2 days" -- Decision: Unclear. What do I do with that? Probably doesn't belong front and center.
-
----
-
-## Part 2: Data Visualization -- Charts and When to Use Them
-
-### Why Charts Exist
-
-Numbers alone are hard to interpret. "Completed: 47, In Progress: 23, Open: 15" requires mental math. A bar chart showing those same numbers lets you see the proportions instantly. Visualization turns data into understanding.
-
-### Chart Types and Their Sweet Spots
-
-**Bar charts** -- Comparing quantities across categories.
-- Tasks by status (open, in progress, completed)
-- Tasks per project
-- Activity by team member
-
-Bar charts are the workhorse of dashboards. When in doubt, use a bar chart. They're intuitive, easy to read, and work for most comparisons.
-
-**Line charts** -- Showing trends over time.
-- Tasks completed per day/week over the last month
-- Member activity over time
-- Project progress over time
-
-Line charts answer "is this going up or down?" They're essential for spotting trends -- are we completing more tasks each week, or fewer?
-
-**Pie/donut charts** -- Showing proportions of a whole.
-- Task status breakdown (what percentage is complete?)
-- Tasks by project (where is the effort going?)
-
-Use pie charts sparingly. They work well when you have 3-5 slices. With more than that, they become unreadable. A bar chart is almost always a better alternative.
-
-**Progress bars** -- Showing completion toward a goal.
-- Project completion (65% of tasks done)
-- Sprint progress
-- Subscription usage (using 8 of 10 seats)
-
-### Design Principles for Charts
-
-- **Label everything.** Every axis, every bar, every slice needs a label. If someone has to guess what they're looking at, the chart has failed.
-- **Use consistent colors.** Pick a color for "completed" (green), "in progress" (blue), "overdue" (red) and use them everywhere. Consistency reduces cognitive load.
-- **Keep it simple.** No 3D effects, no gratuitous animation, no decorative elements. Charts are tools, not art.
-- **Show the number.** Always display the actual value alongside the visual. A bar chart shows proportions; the number on top of each bar gives precision.
-
----
-
-## Part 3: Admin Panels -- What Admins Need
-
-### The Admin's Job
-
-An org admin in TeamTask Pro needs to:
-
-1. **See who's in the organization** -- all members, their roles, when they joined, when they were last active.
-2. **Manage members** -- invite new members, change roles, remove members.
-3. **Understand usage** -- how many tasks, projects, and members exist. Is the org active or dormant?
-4. **Monitor the subscription** -- what plan are we on, when does it renew, how many seats are we using.
-5. **Review activity** -- what's been happening? Who did what?
-
-### Member Management
-
-The admin panel should show a table of all organization members with:
-- Name and email
-- Role (admin, member)
-- Join date
-- Last active date
-- Actions (change role, remove)
-
-Inviting new members should be straightforward -- enter an email, choose a role, send an invite.
-
-### Usage Statistics
-
-A summary section showing:
-- Total members (and how many are active this week)
-- Total projects
-- Total tasks (broken down by status)
-- Storage or feature usage relative to plan limits
-
-### Subscription Status
-
-Show the current plan, billing cycle, next renewal date, and a link to the Stripe customer portal for managing the subscription. This connects to the Stripe integration from Week 9.
-
----
-
-## Part 4: Aggregation Queries -- Conceptual Understanding
-
-### What Aggregation Means
-
-Your database has individual records: tasks, users, projects, activity entries. Dashboards need summaries: "how many tasks per project," "total completed this week," "most active member."
-
-Aggregation is the process of taking many individual records and producing summary statistics. You don't need to write these queries yourself -- Claude Code handles that -- but understanding the concepts helps you describe what you want.
-
-### Common Aggregation Operations
-
-**Count** -- How many of something exist?
-- "How many tasks are in each status?" -- Count tasks, grouped by status.
-- "How many members are in the org?" -- Count members.
-
-**Sum** -- What's the total?
-- "How many tasks were completed across all projects?" -- Sum of completed tasks.
-
-**Group By** -- Break down a count or sum by category.
-- "Tasks per project" -- Count tasks, grouped by project.
-- "Completions per member" -- Count completed tasks, grouped by who completed them.
-
-**Filter + Aggregate** -- Narrow down before summarizing.
-- "Tasks completed this week" -- Filter to this week's tasks, then count where status is "completed."
-- "Active members this month" -- Filter activity to this month, then count unique members.
+The solo cups (low pays) should look similar to each other but differ by color. The characters (high pays) should be immediately distinguishable — different silhouettes, different color palettes. Wilds and scatters need to stand out from everything else.
 
 ### When Directing Claude Code
 
-You describe the question, not the query:
-
-> "Show me how many tasks are in each status for the current organization"
-
-> "I need a chart showing tasks completed per week for the last 8 weeks"
-
-> "Show each member's name and how many tasks they completed this month"
-
-Claude Code translates these into the right database queries. Your job is knowing what questions to ask.
+> "Claude, build the reel grid UI for Frat House Frenzy. Create a GameScreen component containing a 5×4 ReelGrid, BetControls (bet selector, spin button), and BalanceDisplay. Each symbol type should have a distinct visual representation. Use Tailwind for layout and styling. The grid should have a dark theme with neon party lighting accents — think gritty cartoon meets nightclub."
 
 ---
 
-## Part 5: Activity Logs -- The Audit Trail
+## Part 2: Animation with Framer Motion
 
-### Why Activity Logs Matter
+### Why Animation Matters in a Slot Game
 
-Activity logs answer "who did what, when." They serve three purposes:
+In most web applications, animation is a nice-to-have. In a slot game, animation is the product. The experience of watching reels spin, stop, and reveal your fate is the entire reason someone plays. Without animation, you just have a grid of icons that changes — that's a spreadsheet, not a game.
 
-1. **Accountability** -- If a task gets deleted or a member gets removed, there's a record of who did it and when.
-2. **Debugging** -- When something goes wrong, the activity log helps you trace back to what happened.
-3. **Awareness** -- Team members can see what's been happening in the org without asking around.
+### Framer Motion Basics
 
-### What to Log
+Framer Motion is a React animation library. You replace standard HTML elements with motion elements (`motion.div`, `motion.span`) and describe how they should animate. You define states, and Framer Motion handles the transitions between them.
 
-Not everything needs to be logged. Focus on actions that change state:
+You don't need to understand every Framer Motion API. You need to understand what animations the game needs, and Claude Code handles the implementation.
 
-- Task created, updated, completed, deleted
-- Project created, archived, deleted
-- Member invited, role changed, removed
-- Subscription changed
+### The Spin Animation
 
-Each log entry should capture:
-- **Who** -- Which user performed the action
-- **What** -- What action they took (created, updated, deleted)
-- **Target** -- What they acted on (which task, which project, which member)
-- **When** -- Timestamp
-- **Details** -- Any relevant context (e.g., "changed status from 'open' to 'completed'")
+When the player clicks spin, the reels need to animate in sequence:
 
-### Displaying the Activity Log
+1. **All reels start spinning** — symbols blur and scroll downward rapidly, like a real slot machine.
+2. **Reels stop left to right** — Reel 1 stops first, then reel 2, then 3, 4, 5. Each stop has a brief "bounce" or "slam" effect. The staggered stop creates anticipation — you see the first symbols land and start hoping the next reels complete a match.
+3. **Landing effect** — When a reel stops, there's a subtle bounce or thud animation. The symbols settle into place.
 
-Activity logs are typically shown as a reverse-chronological feed -- newest first. Each entry is a single line: "Alice completed task 'Design mockups' in Project Alpha -- 2 hours ago."
+The outcome was determined by the server before the animation starts. The animation is purely cosmetic — it reveals a result that already exists.
 
-Filtering matters here. Let admins filter by:
-- Time range (today, this week, this month)
-- Action type (creates, updates, deletes)
-- User (what did Alice do?)
-- Target (what happened to Project Alpha?)
+### The Cascade Animation
 
----
+After wins are identified:
 
-## Part 6: Data Export -- Users Own Their Data
+1. **Winning symbols highlight** — A glow, pulse, or flash effect draws attention to the winning positions.
+2. **Winning symbols are removed** — They explode, dissolve, shatter, or fly off the grid. This should feel satisfying.
+3. **Remaining symbols drop** — Gravity pulls them down to fill the gaps. This should feel physical — a slight acceleration and bounce at the bottom.
+4. **New symbols arrive** — They drop in from above to fill the empty positions at the top.
+5. **Evaluate again** — If new wins form, repeat the cascade animation.
 
-### Why Data Export Matters
+Each cascade step should be clearly visible. The player needs to see what won, see it removed, see new symbols arrive, and see if they won again. Speed this up, but don't skip it.
 
-Users should be able to get their data out of your application. This is both a trust issue and, in some jurisdictions, a legal requirement.
+### Win Celebrations
 
-CSV (comma-separated values) is the universal export format. Every spreadsheet application (Excel, Google Sheets) can open a CSV file. It's simple, portable, and human-readable.
+Different win sizes deserve different celebrations:
 
-### What to Export
+- **Small win (under 5x):** Brief highlight and payout counter.
+- **Medium win (5x–20x):** Bigger highlight, the win amount animates up in a larger font.
+- **Big win (20x–50x):** Full-screen overlay, "BIG WIN" text with particle effects, a dramatic payout counter that ticks up.
+- **Mega win (50x+):** Extended celebration — screen shake, bass drop, strobing effects, crowd sounds, the payout counter ticks up slowly for maximum drama.
 
-For TeamTask Pro, users should be able to export:
-- All tasks (with project name, status, assignee, dates)
-- All projects (with member count, task count, status)
-- Activity log (with timestamps, actions, actors)
+### When Directing Claude Code
 
-### How Export Works (Conceptual)
-
-1. User clicks "Export" and chooses what to export (tasks, projects, or activity).
-2. The server queries the database for the relevant data, scoped to their organization.
-3. The server formats the data as CSV.
-4. The browser downloads the file.
-
-It's a simple flow, but it's one of those features that makes users trust your product. "I can always get my data out" is a powerful reassurance.
+> "Claude, add Framer Motion animations to the reel grid. Implement: (1) spin animation where reels scroll and stop left-to-right with a bounce, (2) cascade animation where winning symbols highlight then explode, remaining symbols drop with gravity, and new symbols enter from above, (3) win celebration overlays that scale with win size — small text for small wins, full-screen celebration for big wins. Use Framer Motion's AnimatePresence for symbol enter/exit."
 
 ---
 
-## Part 7: The v1 Mindset
+## Part 3: Sound Design with Howler.js
 
-### What "Good Enough to Launch" Means
+### Why Sound Matters
 
-v1 is not "perfect." v1 is "complete enough that someone can use it and get value from it."
+Close your eyes and think of a slot machine. You probably hear it — the spinning, the landing, the coin sounds, the victory jingles. Sound is half the experience. A silent slot game feels broken, no matter how good the visuals are.
 
-Here's what v1 of TeamTask Pro should have:
-- Users can sign up, create orgs, invite members
-- Teams can create projects and tasks
-- Tasks can be assigned, tracked, and completed
-- Org owners can see dashboards and manage their team
-- Payments work (free and paid tiers)
-- Notifications keep people informed
-- Data can be exported
-- The app is stable and deployed
+Sound creates emotional feedback loops. The satisfying "thud" when reels land tells you something happened. The building music during cascades creates tension. The bass drop on a big win delivers a dopamine hit. Game designers have understood this for decades.
 
-Here's what v1 does NOT need:
-- Every possible feature
-- Perfect design on every screen
-- Handling every edge case
-- Mobile optimization (nice to have, not required)
-- Advanced analytics or reporting
+### Howler.js
 
-### The Trap of "Just One More Feature"
+Howler.js is a JavaScript audio library that handles the messy reality of browser audio. Different browsers support different formats, mobile has autoplay restrictions, and playing multiple sounds simultaneously requires careful management. Howler.js abstracts all of this.
 
-The most common reason products never launch is that the builder keeps adding features. "Let me just add..." is the enemy of shipping. v1 exists to learn. Ship it, see how people react, and improve based on real feedback. The features you think users want are often wrong. The only way to find out is to launch.
+### Audio Sprites
 
-### Celebrating the Milestone
+Instead of loading 50 individual sound files, audio sprites combine many sounds into one file. Each sound is a segment within that file, defined by start time and duration. This reduces HTTP requests and load time.
 
-Seriously -- take a moment when v1 is deployed. You've directed the construction of a multi-tenant SaaS application with authentication, payments, notifications, dashboards, and admin tools. That's not a tutorial project. That's a real product. Most people who want to build software never get this far.
+Think of it like a vinyl record with track markers — one file, many sounds, instant access to any of them.
+
+### Sound States for Frat House Frenzy
+
+The game has distinct audio moods:
+
+**Base game.** Lo-fi party background: muffled bass, distant chatter, ambient college-party vibes. This plays continuously during normal spins. It should be unobtrusive — a mood setter, not a distraction.
+
+**Spin sounds.** Reel spin (a whirring/clicking sound), reel stop (a satisfying thud for each reel), symbol land (subtle click).
+
+**Cascade sounds.** EDM build-up that increases in pitch and tempo with each consecutive cascade. First cascade: subtle. Third cascade: building. Fifth cascade: the music is clearly escalating. This creates the feeling of chaos building.
+
+**Win sounds.** Scaled to the win size:
+- Small win: brief coin/ding sound.
+- Big win (50x+): bass drop, crowd roar, the music shifts to celebration mode.
+- The payout counter should have its own ticking sound that speeds up as the number climbs.
+
+**Bonus entry.** Record scratch → beat of silence → "LET'S GO" voice sample → beat drop. This is the most dramatic audio moment in the game.
+
+**Blackout round.** Heartbeat effect with a low drone that builds in intensity.
+
+### When Directing Claude Code
+
+> "Claude, integrate Howler.js for sound in Frat House Frenzy. Set up an audio sprite system. Implement sound states: base game ambient loop, spin/stop/land effects, cascade sounds that build in intensity with each cascade level, win celebration sounds scaled to win size, and a bonus entry sound sequence. Add a volume control and mute toggle. Make sure sounds respect browser autoplay policies by starting audio context on first user interaction."
+
+---
+
+## Part 4: State Management for a Game
+
+### Why Game State Is Different
+
+A typical web app has straightforward state: form values, user data, UI toggles. A slot game has layered state that changes rapidly and must stay synchronized between the server and the client.
+
+### The State Layers
+
+**Player state** — persistent, stored in the database:
+- Balance
+- Current bet amount
+- Client seed
+- Session history
+
+**Spin state** — temporary, lives during a single spin:
+- Is the game currently spinning?
+- Current cascade level
+- Accumulated wins for this spin
+- The grid state at each cascade step
+
+**Animation state** — drives the visual layer:
+- Which reels are spinning vs. stopped?
+- Which symbols are highlighted as winners?
+- Which symbols are being removed (cascade out)?
+- Which symbols are dropping in (cascade in)?
+- Is a win celebration playing?
+- Current celebration tier (small/big/mega)
+
+**UI state** — user preferences:
+- Auto-spin on/off (and remaining count)
+- Turbo mode on/off
+- Sound on/off and volume level
+- Bet amount selection
+
+### The Flow
+
+1. Player clicks spin → spin state becomes "spinning," animation state starts reel animations.
+2. Server returns result → spin state gets the outcome, animation state begins stopping reels.
+3. Reels stop → animation state highlights wins, spin state tracks cascade level.
+4. Cascade animations play → animation state cycles through remove/drop/new for each cascade.
+5. All cascades complete → spin state calculates final payout, player state updates balance.
+6. If auto-spin is on, loop back to step 1.
+
+### When Directing Claude Code
+
+> "Claude, set up state management for Frat House Frenzy. Use React state (or Zustand if complexity warrants it) to manage: player state (balance, bet amount), spin state (spinning/idle, cascade level, accumulated wins), animation state (reel states, symbol highlights, celebration tier), and UI state (auto-spin, turbo mode, sound settings). The spin state machine should have clear transitions: idle → spinning → revealing → cascading → celebrating → idle."
+
+---
+
+## Part 5: The Admin Dashboard
+
+### What the Operator Needs to See
+
+You built the player-facing game. Now build the operator-facing dashboard — the control room where you monitor whether the game is behaving correctly and whether the business is healthy.
+
+### RTP Monitoring in Real-Time
+
+The most important metric for a game operator is actual RTP. Your math model targets 96.09%, but does the live game match?
+
+Build a chart (using Recharts) that shows:
+- **Rolling RTP** — the actual return to player over the last 1,000 / 10,000 / 100,000 spins. Short windows will fluctuate wildly (that's normal with extreme volatility). Longer windows should converge toward 96.09%.
+- **Cumulative RTP over time** — a line chart showing how RTP has evolved since launch. It should trend toward the target.
+- **RTP by time period** — hourly, daily, weekly breakdowns.
+
+If actual RTP deviates significantly from the target over a large sample, something is wrong with the math model.
+
+### Player Activity Metrics
+
+- **Active players** — how many players are currently in a session.
+- **Spins per hour** — total game throughput.
+- **Average bet size** — what players are actually wagering.
+- **Player sessions** — average session length, session count.
+
+### Revenue Metrics
+
+- **Total wagered** (handle) — all bets placed.
+- **Total paid out** — all winnings returned.
+- **Gross gaming revenue** (GGR) — handle minus payouts. This is your revenue.
+- **GGR by day/week/month** — the trend line.
+
+### Building Charts with Recharts
+
+Recharts is a React charting library built on D3. It provides line charts, bar charts, area charts, and more as React components. You describe the data and the chart type, and Recharts renders it.
+
+For the admin dashboard:
+- Line chart for RTP over time
+- Bar chart for daily GGR
+- Area chart for spin volume by hour
+- Number cards for key metrics (active players, current RTP, today's GGR)
+
+### When Directing Claude Code
+
+> "Claude, build an admin dashboard at /admin for Frat House Frenzy. Use Recharts for visualizations. Include: (1) a rolling RTP chart showing actual RTP over the last 1K/10K/100K spins with a target line at 96.09%, (2) a GGR chart showing daily gross gaming revenue, (3) player activity metrics (active players, spins per hour, average bet), (4) number cards for key metrics. Protect the admin route with role-based access."
+
+---
+
+## Part 6: The Provably Fair Verification Page
+
+### Letting Players Verify Their Spins
+
+Trust isn't just about having a provably fair system — it's about making it accessible. Players should be able to verify any spin they've made without being cryptography experts.
+
+### The Verification Page
+
+Build a page where players can:
+
+1. **See their spin history** — a table showing each spin's date, bet, result, and payout.
+2. **View the provably fair details** for any spin — server seed hash (shown before the spin), revealed server seed (shown after the session), client seed, and nonce.
+3. **Run the verification** — click a button and the page recalculates the outcome using the same HMAC-SHA256 formula. It shows the raw hex output, the symbol mapping, and the resulting grid — matching what the player saw.
+4. **Change their client seed** — for future spins, the player can enter their own client seed. This guarantees the server can't have pre-computed outcomes for their specific seed.
+
+### Making It Understandable
+
+The verification page should explain the process in plain language:
+
+- "Before your spin, the server committed to a secret seed. Here's the hash it showed you."
+- "After your session, the server revealed the actual seed. You can verify the hash matches."
+- "Using the server seed, your client seed, and the spin number, the math produces this exact outcome."
+- "If anything doesn't match, the game was tampered with. (It won't be.)"
+
+Include a "Verify" button that runs the calculation client-side so the player can confirm independently.
+
+### When Directing Claude Code
+
+> "Claude, build a provably fair verification page at /verify. Show the player's spin history with details for each spin. For each spin, display the server seed hash, revealed server seed, client seed, and nonce. Add a 'Verify' button that recalculates the HMAC-SHA256 output client-side and shows the resulting symbol grid. Include a section where players can change their client seed for future sessions. Add plain-language explanations of the provably fair process."
+
+---
+
+## Part 7: What "v1 Launch" Means for a Game
+
+### The v1 Checklist
+
+v1 of Frat House Frenzy is not "finished." It's "complete enough to be real." Here's what v1 must have:
+
+**Playable:**
+- Players can spin with real bets
+- The 5×4 grid renders correctly
+- Ways-to-win evaluation works
+- Cascades work
+- Payouts are mathematically correct
+
+**Authenticated:**
+- Players can sign up and log in
+- Each player has their own balance and history
+- Sessions are secure
+
+**Funded:**
+- Players can deposit via Stripe
+- Balance updates correctly on wins and losses
+- Withdrawals work (or are queued for manual processing)
+
+**Provably fair:**
+- Server seed commitment before each session
+- Full verification available to players
+- Seeds stored and revealed correctly
+
+**Animated:**
+- Reels spin and stop with animation
+- Cascades are visually clear
+- Win celebrations exist (even basic ones)
+- Sound plays for key events
+
+**Monitored:**
+- Admin dashboard shows RTP and key metrics
+- Sentry catches errors
+- Spin logs exist for audit
+
+### What v1 Does NOT Need
+
+- Every bonus feature (Beer Pong Respin, Party Foul, xWays Funnels — these come in later weeks)
+- Perfect art (placeholder symbols are fine)
+- Mobile optimization
+- The Full Send Jackpot
+- Bonus rounds (Party Mode, Darty Mode, Full Send Mode)
+- The Blackout Meter
+
+These are powerful features that will make the game special. But they're enhancements to a working game. You need the working game first.
+
+### The Trap of "It's Not Ready Yet"
+
+The most common reason games never launch is scope creep disguised as quality. "We need one more feature" becomes ten more features. v1 exists so you can play it, show it to people, get feedback, and discover what actually matters. Half the features you think are essential will turn out to be irrelevant. Half the features you haven't thought of will turn out to be critical. You can only discover this by launching.
+
+---
+
+## Part 8: Auto-Spin and Turbo Mode
+
+### Auto-Spin
+
+Auto-spin lets the player set a number of spins (10, 25, 50, 100, or unlimited) and the game spins automatically without clicking each time. This is a standard slot game feature that players expect.
+
+The implementation:
+- Player selects the number of auto-spins and clicks start.
+- After each spin completes (including all animations), the next spin fires automatically.
+- Auto-spin stops when: the count is reached, the balance drops below the bet amount, a bonus round triggers, or the player manually stops.
+- Show a counter ("Auto: 7/25") and a stop button.
+
+### Turbo Mode
+
+Turbo mode speeds up the animations. Instead of watching reels spin for 2 seconds each, they snap into place quickly. Cascade animations are faster. Win celebrations are shorter.
+
+Turbo doesn't change the game logic or outcomes at all. It only affects animation timing. Some players want to watch every spin unfold dramatically. Others want to grind through spins quickly. Turbo mode serves the second group.
+
+The implementation is straightforward: define two sets of animation durations (normal and turbo) and toggle between them based on the turbo state.
+
+### When Directing Claude Code
+
+> "Claude, add auto-spin and turbo mode to Frat House Frenzy. Auto-spin: let the player choose 10/25/50/100/unlimited spins, show a counter, auto-fire next spin after animations complete, stop on count reached, low balance, bonus trigger, or manual stop. Turbo mode: a toggle that reduces all animation durations by 60-70%. Both should be toggleable from the BetControls component. Store the settings in the game's UI state."
 
 ---
 
 ## What's Next
 
-Head to [project.md](project.md) to build the admin layer and ship v1 of TeamTask Pro.
+Head to [project.md](project.md) to build the reel UI, add animations and sound, create the admin dashboard, and ship v1 of Frat House Frenzy.

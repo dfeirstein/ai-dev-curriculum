@@ -1,205 +1,191 @@
-# Week 8 Guide: TeamTask Pro Foundation
+# Week 8 Guide: Frat House Frenzy — Foundation
 
-Your bookmark manager serves one person. Your portfolio is a personal site. Now you're building something that serves many people, working together, on teams. That shift -- from personal tool to multi-user product -- is what separates a project from a SaaS business.
-
----
-
-## Part 1: What Makes Something a SaaS
-
-SaaS stands for Software as a Service. It means software that people access through a browser, typically on a subscription basis. Gmail, Slack, Notion, Linear, Asana -- all SaaS products.
-
-Three things define a SaaS product:
-
-**Multi-user.** Many people use the same application. Each person has their own account, their own data, their own experience. The application serves thousands of users simultaneously, but each one feels like it was built just for them.
-
-**Multi-tenant.** Users are organized into tenants -- usually called organizations, workspaces, or teams. A company signs up, creates an organization, and invites their team members. Everything that team does is contained within their organization. Other organizations can't see it.
-
-**Subscription model.** Users pay on a recurring basis -- monthly or annually. Different tiers offer different features. Free tiers attract users. Paid tiers generate revenue.
-
-This week you're building the first two: multi-user and multi-tenant. Week 9 adds the subscription model.
-
-### The SaaS Mental Model
-
-When you're directing Claude Code to build a SaaS, think about your app as serving many teams, not one person. Every feature you add needs to ask: "Which organization does this belong to?" Every database query needs to filter by organization. Every permission check needs to consider the user's role within their organization.
-
-This is the biggest conceptual shift from what you've built so far. Your bookmark manager asked "which user?" TeamTask Pro asks "which user, in which organization, with what role?"
+Your bookmark manager serves one person. Your portfolio is a personal site. Now you're building something that serves many people, playing a game, managing balances, tracking wins and losses. That shift -- from personal tool to interactive game with real money mechanics -- is what separates a project from a product.
 
 ---
 
-## Part 2: Multi-Tenancy
+## Part 1: What a Web Game Needs vs a SaaS App
 
-Multi-tenancy means multiple organizations share the same application and database, but each one is isolated -- they can't see each other's data.
+You've been building tools. Now you're building entertainment. The mental model changes.
 
-### How It Works
+A SaaS app like a project manager asks: "Which organization does this belong to?" A game asks: "What is this player's balance, and what happens when they press Spin?"
 
-Imagine three companies all use TeamTask Pro: Acme Corp, Widget Inc, and StartupXYZ. They all use the same application, running on the same servers, storing data in the same database. But:
+Three things define an online slot game:
 
-- Acme Corp can only see Acme Corp's projects and tasks
-- Widget Inc can only see Widget Inc's projects and tasks
-- StartupXYZ can only see StartupXYZ's projects and tasks
+**Player accounts.** Every player has their own account, their own balance, their own spin history. Authentication works the same way it does in a SaaS -- Better Auth handles it -- but the context is different. Instead of workspaces and teams, you have individual players with wallets.
 
-This isolation is enforced at the data level. Every project, task, and piece of data has an `organizationId` that says which organization it belongs to. Every database query includes a filter: "only return data where `organizationId` matches the current user's organization."
+**Game state.** At any moment, the game needs to know: What is the player's balance? Are they in the middle of a bonus round? What's the current multiplier? Game state is more volatile than SaaS state. A task in a project manager might sit unchanged for days. A slot game's state changes every second during play.
 
-### Why It Matters
+**Balance management.** This is the most critical difference. In a SaaS, if a feature-gate check fails, the worst case is a user sees something they shouldn't. In a game with money, if a balance check fails, real money is lost or created out of thin air. Every cent must be accounted for, every transaction must be atomic, every calculation must be exact.
 
-If multi-tenancy breaks, Organization A can see Organization B's private data. This is a critical security concern. When directing Claude Code, always verify that data queries are properly scoped to the current organization.
+### The Game Mental Model
+
+When you're directing Claude Code to build Frat House Frenzy, think about your app as serving individual players, each with their own wallet and game history. Every feature you add needs to ask: "What does this cost the player?" and "What could this pay the player?" Every database operation that touches money must be wrapped in a transaction.
+
+This is the biggest conceptual shift from what you've built so far. Your bookmark manager asked "which user?" Frat House Frenzy asks "which player, with what balance, in what game state, and is this operation financially safe?"
+
+---
+
+## Part 2: Player Authentication with Better Auth
+
+Good news: authentication works the same way regardless of what you're building. Better Auth handles player accounts just like it handled user accounts in your earlier projects. The difference is context, not technology.
+
+### What Changes for a Game
+
+**Registration feels different.** A SaaS signup asks for company details, team size, use case. A game signup should be fast and frictionless -- email, password, done. Players want to play, not fill out forms. The fewer fields, the better.
+
+**Sessions matter more.** In a SaaS, if a user's session expires mid-task, they log in again and pick up where they left off. In a game, if a session expires mid-spin, you need to handle the in-progress game state. What happens to their bet? Was the spin resolved? Session management must account for active gameplay.
+
+**Display names vs real names.** SaaS users often use their real names. Game players often want a username or display name. Your player profile should support this.
 
 ### When Directing Claude Code
 
-> "Claude, every database query that returns projects, tasks, or any organization-scoped data must filter by the current user's organizationId. Never return data from another organization. Add this as a rule in CLAUDE.md."
+> "Claude, set up Better Auth for player authentication. Keep registration minimal -- email, password, and a display name. Configure session handling so active game states are preserved if a session refreshes. Use the same Better Auth patterns from our earlier projects."
 
 ---
 
-## Part 3: Data Modeling
+## Part 3: Database Design for a Game
 
-Data modeling is deciding what things exist in your system and how they relate to each other. For TeamTask Pro, the hierarchy is:
+The database is where everything lives. Players, balances, game sessions, spin results. Get the schema right and everything else flows. Get it wrong and you'll fight the database for the rest of the project.
 
-### The Hierarchy
+### The Core Tables
 
-**Users** are at the top. A user is a person with an account -- email, password, profile.
+**Players.** Each player has an account. This extends the auth user with game-specific fields: display name, current balance, account status (active, suspended), and creation date. The player table is the anchor -- everything else connects to it.
 
-**Organizations** are teams or companies. An organization has a name and settings. Users join organizations. A user can belong to multiple organizations (think of how you might be in a Slack workspace for work and another for a community).
+**Balances -- Store as Integer Cents.** This is critical. Never store money as floating-point numbers. Computers can't represent all decimal numbers precisely. `0.1 + 0.2` in JavaScript equals `0.30000000000000004`, not `0.3`. If your player has $10.00, store it as `1000` (cents). A $0.50 bet is `50`. A $125.75 win is `12575`.
 
-**Memberships** connect users to organizations. A membership says "this user belongs to this organization, with this role." The membership is where the role lives -- you might be an owner of your own organization but just a member of another.
+Every calculation happens in integers. Every display converts cents to dollars at the last possible moment. This is how Stripe works, how banks work, and how your game must work.
 
-**Projects** belong to an organization. A project groups related tasks together. "Website Redesign," "Q1 Marketing," "Mobile App" -- each is a project.
+**Game sessions.** A game session tracks a player's continuous play period. When did they start playing? When did they stop? What was their starting balance? Ending balance? Sessions are useful for analytics, responsible gaming features, and debugging.
 
-**Tasks** belong to a project. A task is a single unit of work. It has a title, description, status (todo, in progress, done), priority, and an assignee (the team member responsible).
+**Spin history.** Every single spin must be recorded. The bet amount, the result (symbol positions), the payout, the timestamp, and the provably-fair seeds used to generate the outcome. This is your audit trail. If a player disputes a result, you can prove exactly what happened.
 
 ### Relationships
 
 Think of it as a tree:
 
 ```
-User
-  └── Membership (with role)
-        └── Organization
-              └── Project
-                    └── Task (with assignee)
+Player
+  └── Balance (stored as integer cents on the player record)
+  └── Game Session
+        └── Spin (with bet, result, payout, seeds)
 ```
 
-A user has many memberships. An organization has many members, many projects. A project has many tasks. A task has one assignee (who must be a member of the organization).
+A player has many game sessions. A game session has many spins. Each spin records the exact bet amount, the outcome, and the payout -- all in integer cents.
 
 ### Why This Matters for Directing Claude Code
 
-When you describe this data model to Claude Code, be explicit about the relationships and constraints. "Tasks belong to projects. Projects belong to organizations. A task's assignee must be a member of the same organization." These constraints prevent bugs where a user from Organization A gets assigned a task in Organization B.
+When you describe this data model to Claude Code, be explicit about the integer-cents rule and the relationships. "Balances are stored as integers representing cents. A spin belongs to a game session. A game session belongs to a player. Every spin records the bet amount, result, and payout as integers." These constraints prevent the two worst bugs in a game: incorrect balances and missing audit records.
 
 ### When Directing Claude Code
 
-> "Claude, design the database schema for TeamTask Pro. The hierarchy is: users -> memberships -> organizations -> projects -> tasks. Each membership has a role (owner, admin, member). Tasks have a title, description, status (todo, in_progress, done), priority (low, medium, high, urgent), and an assignee who must be a member of the organization. Use Drizzle ORM with proper foreign keys and constraints."
+> "Claude, design the database schema for Frat House Frenzy. The core tables are: players (extending auth users with display name and balance in integer cents), game_sessions (tracking play periods with start/end times and start/end balances), and spin_history (recording every spin with bet amount, symbol results, payout, and provably-fair seeds). All monetary values are integers representing cents. Use Drizzle ORM with proper foreign keys and constraints. Add an index on spin_history by player and timestamp for fast lookups."
 
 ---
 
-## Part 4: Role-Based Access Control
+## Part 4: Drizzle ORM for the Game Schema
 
-Not every team member should have the same permissions. The person who created the organization should be able to delete it. A regular member should not.
+You used Drizzle in earlier weeks. The concepts are the same -- define your schema in TypeScript, let Drizzle generate SQL migrations, use the query builder for type-safe database access. What's new is the schema itself and the patterns you'll need for a game.
 
-### The Roles
+### Integer Columns for Money
 
-**Owner.** The person who created the organization. Full control: can change settings, manage billing, delete the organization, manage all members. There should always be at least one owner.
+Drizzle supports integer columns. Use them for every monetary field:
 
-**Admin.** A trusted team member. Can manage projects, manage tasks, and invite new members. Cannot delete the organization or manage billing.
+- `balance` on the player table: integer, default 0
+- `betAmount` on the spin table: integer, not null
+- `payoutAmount` on the spin table: integer, not null
+- `depositAmount`, `withdrawalAmount` on transaction records: integer, not null
 
-**Member.** A regular team member. Can create and manage their own tasks, view projects they're assigned to, and update task statuses. Cannot invite members or change organization settings.
+When you tell Claude Code to create these columns, specify "integer, representing cents" so there's no ambiguity.
 
-### How It Works
+### Enums for Game States
 
-When a user performs an action, your app checks: "Does this user's role in this organization allow this action?" If yes, proceed. If no, show an error.
+Games have more states than SaaS apps. A spin can be `pending`, `resolved`, or `error`. A bonus round can be `active`, `completed`, or `forfeited`. A game session can be `active` or `ended`. Use PostgreSQL enums (Drizzle supports them) to enforce valid states at the database level.
 
-This check happens in two places:
+### Timestamps Everywhere
 
-1. **The UI.** Don't show buttons the user can't use. If a member can't invite people, don't show them the invite button. This is for user experience.
-2. **The API.** Even if someone manipulates the UI, the API must enforce permissions. This is for security. Never trust the frontend alone.
+In a SaaS, timestamps are nice to have. In a game, they're essential. Every spin needs a timestamp. Every balance change needs a timestamp. Every session start and end needs a timestamp. When something goes wrong -- and in a game with money, things will go wrong -- timestamps are how you reconstruct what happened.
 
 ### When Directing Claude Code
 
-> "Claude, implement role-based access control. Owners can do everything. Admins can manage projects, tasks, and invite members. Members can create and update tasks and view projects. Check permissions in both the UI (hide unauthorized actions) and the API (reject unauthorized requests). Define the permission matrix in CLAUDE.md."
+> "Claude, implement the Drizzle schema for Frat House Frenzy. All monetary values use integer columns representing cents. Use PostgreSQL enums for game states (spin status, session status, transaction type). Add createdAt timestamps to every table. Make sure the schema enforces referential integrity -- a spin can't exist without a game session, a game session can't exist without a player."
 
 ---
 
-## Part 5: The Invitation System
+## Part 5: Dark Theme and Visual Design
 
-Teams grow. When a new person joins the company, they need to join the organization in TeamTask Pro. That's the invitation system.
+Frat House Frenzy is a dark-comedy slot game set at a chaotic frat party. The visual design isn't decoration -- it's the product. A casino game in a white corporate theme would feel wrong. The theme creates immersion, and immersion is what keeps players engaged.
 
-### How Invitations Work
+### Why Dark Theme Matters for a Casino Game
 
-1. An admin or owner enters an email address and selects a role
-2. The app creates an invitation record (email, role, organization, status: pending)
-3. An email is sent to the invited person with a link
-4. The person clicks the link, creates an account (or logs in if they already have one), and joins the organization with the assigned role
-5. The invitation status changes to accepted
+Every real casino -- physical or online -- uses dark backgrounds. There's a reason. Dark backgrounds make bright colors pop. Neon accents glow against black. Winning animations feel more dramatic. The entire visual language of gaming is built on contrast: dark canvas, bright action.
 
-### Edge Cases to Think About
+Tailwind CSS makes this straightforward. You already used Tailwind in earlier projects. Now you'll use its dark mode utilities intentionally, not just as an accessibility option.
 
-- What if the person is already a member? Don't send a duplicate invitation.
-- What if the invitation expires? Set a reasonable expiration (7 days is common).
-- What if the person doesn't have an account yet? The invitation flow should handle both new and existing users.
-- Can an invitation be revoked? Yes -- the inviter should be able to cancel a pending invitation.
+### The Visual Language
+
+**Background:** Near-black or deep purple. Think of a dark room lit by neon signs and phone screens.
+
+**Accents:** Neon pink, electric blue, toxic green, gold for wins. These are your signal colors -- they draw the eye to important elements like the spin button, the balance display, and win amounts.
+
+**Typography:** Bold, slightly irreverent. The game's personality comes through in the fonts and text treatment. Win amounts should be large and celebratory. Bet amounts should be clear and readable.
+
+**Animation areas:** Leave space in your design for animations. Reels spin. Wins cascade. Multipliers escalate. The UI needs to accommodate motion without feeling cramped.
 
 ### When Directing Claude Code
 
-> "Claude, build an invitation system. Admins and owners can invite users by email with a selected role. Create an invitations table tracking email, role, organization, status (pending/accepted/expired/revoked), and expiration date. Handle both new users and existing users. Show pending invitations in the organization settings."
+> "Claude, set up the Tailwind theme for Frat House Frenzy. Force dark mode (not system-preference based). Background colors should be near-black with deep purple accents. Add custom colors for neon-pink, electric-blue, toxic-green, and gold. The overall aesthetic is a dark room lit by neon party lights. All text should be high-contrast for readability against dark backgrounds."
 
 ---
 
-## Part 6: The Landing Page
+## Part 6: Game Sessions vs SaaS Workspaces
 
-Every SaaS needs a public-facing page that explains what it does. This is separate from the authenticated app -- it's the page people see before they sign up.
+In the SaaS world, a "workspace" is a persistent container. You create a Slack workspace and it exists forever (or until you delete it). People come and go, but the workspace persists.
 
-### What a SaaS Landing Page Includes
+A game "session" is temporary. It starts when a player begins playing and ends when they stop. It tracks what happened during that period of play, then it's done. A new play period is a new session.
 
-- **Hero section.** What the product does in one sentence. A screenshot or demo.
-- **Features.** Three to five key capabilities, briefly explained.
-- **Pricing.** What it costs. (You'll add real pricing in Week 9 -- for now, placeholder tiers.)
-- **Social proof.** Testimonials, user counts, logos. (For now, you can skip this or use placeholder content.)
-- **Call to action.** A "Get Started" button that leads to signup.
+### Why Sessions Matter
 
-The landing page is a marketing tool. Its job is to convince someone to try the product. Keep it clear, focused, and honest about what the product does.
+**Responsible gaming.** Sessions let you track how long someone has been playing continuously. If a player has been spinning for three hours straight, you can show a reminder. This is both ethical and, in many jurisdictions, legally required.
+
+**Analytics.** Sessions tell you how players use the game. Average session length, average number of spins per session, win/loss patterns per session. These metrics help you understand your players and improve the game.
+
+**Debugging.** When a player reports a problem -- "I made a deposit but my balance didn't update" or "I won a bonus round but didn't get paid" -- the session gives you a complete timeline of what happened. Every spin, every bet, every payout, in order.
 
 ### When Directing Claude Code
 
-> "Claude, build a marketing landing page for TeamTask Pro at the root route /. Include a hero section, feature highlights, placeholder pricing tiers (Free and Pro), and a call-to-action button that links to signup. Logged-in users should be redirected to the dashboard instead."
+> "Claude, implement game sessions. A session starts when a player places their first bet (or explicitly opens the game). It ends when they close the game, when they've been inactive for 15 minutes, or when they explicitly cash out. Track session start time, end time, starting balance, ending balance, total bets, total wins, and number of spins. Link every spin record to its session."
 
 ---
 
-## Part 7: File Storage with Vercel Blob
+## Part 7: The Game Layout
 
-Most SaaS apps need to handle file uploads — profile pictures, document attachments, image uploads. Files don't belong in your database (databases store structured data, not binary files). They belong in cloud storage.
+Unlike a SaaS app with navigation menus, sidebars, and content areas, a slot game has a very specific layout. Getting the layout right is essential because players need to see everything that matters at a glance.
 
-### How File Storage Works
+### What the Screen Shows
 
-The mental model is simple:
+**The reel area.** This is the center of the screen -- the 5x4 grid where symbols appear and cascade. It's the main attraction. Everything else frames it.
 
-1. User uploads a file through your app
-2. Your app sends the file to cloud storage (Vercel Blob)
-3. Cloud storage saves the file and returns a URL
-4. Your database stores the URL (a short string), not the file itself
-5. When you need to display the file, you use the URL
+**The balance display.** Always visible. Shows the player's current balance in dollars (converted from cents for display). This must update instantly after every spin, win, or deposit.
 
-This separation is important: your database stays fast (it only stores small URLs), and your files live in storage optimized for serving files quickly.
+**The bet controls.** Bet amount selector and the Spin button. The Spin button is the most important interactive element in the entire game. It must be prominent, satisfying to click, and clearly disabled when the player can't spin (insufficient balance, spin in progress).
 
-### Why Vercel Blob
+**The win display.** When a spin wins, the amount appears prominently. Big wins get bigger treatment.
 
-Vercel Blob is the simplest choice for this course because you're already deploying on Vercel:
-- No extra accounts or configuration
-- Works automatically with your Vercel project
-- Simple API: upload a file, get a URL
-- Handles CDN distribution (files load fast from anywhere)
-
-Other options exist (AWS S3, Cloudflare R2, Google Cloud Storage, Uploadthing) and you should know they exist. For larger apps or specific requirements, you might choose one of these. But for learning and shipping quickly, Vercel Blob is the right default.
+**The game info.** Paytable (what each symbol pays), game rules, and the provably-fair verification link. Usually tucked into a menu or panel so it's accessible but not cluttering the main view.
 
 ### When Directing Claude Code
 
-> "Claude, add file upload support using Vercel Blob. Users should be able to attach files to tasks. Store the file URL in the database, not the file itself. Limit uploads to 10MB. Validate file types with Zod."
+> "Claude, build the main game layout for Frat House Frenzy. Fixed dark background. Center the 5x4 reel grid. Balance display always visible at the top. Bet controls and Spin button at the bottom. Win display overlays the reel area on wins. Add a menu button for paytable and game info. The layout should work on both desktop and mobile. Use the dark theme with neon accent colors."
 
 ### Try It: /powerup
 
-As you tackle a larger, multi-user project, these intermediate `/powerup` lessons become essential:
-- **"Multiply yourself (subagents)"** -- Learn to run parallel agents for complex SaaS work -- one agent building the schema while another scaffolds the UI
+As you tackle a larger, more complex project, these intermediate `/powerup` lessons become essential:
+- **"Multiply yourself (subagents)"** -- Learn to run parallel agents for complex game work -- one agent building the schema while another scaffolds the UI
 - **"Run tasks in background"** -- Keep working while Claude handles longer builds and migrations
 
 ---
 
 ## What's Next
 
-Head to [project.md](project.md) to build TeamTask Pro.
+Head to [project.md](project.md) to build Frat House Frenzy.
