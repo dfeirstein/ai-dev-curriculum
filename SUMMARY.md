@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Course Overview](README.md)
+* [**Accelerated Track (10 Weeks)**](ACCELERATED.md)
 * [Week 0: Setup](SETUP.md)
 
 ## Phase 1: Foundations <a href="#foundations" id="foundations"></a>

@@ -156,8 +156,8 @@ Each week has four files:
 
 ## Getting Started
 
-**[Week 0: Setup](./SETUP.md)** → Set up your Mac, install all tools, create all accounts. Budget a full day.
+**Already building something?** → **[Accelerated Track (10 Weeks)](./ACCELERATED.md)** — project-first, learn skills as you need them.
 
-Then → **[Week 1](./week-01/README.md)**.
+**Starting from scratch?** → **[Week 0: Setup](./SETUP.md)** → Set up your Mac, install all tools, create all accounts. Then → **[Week 1](./week-01/README.md)**.
 
 Let's build.

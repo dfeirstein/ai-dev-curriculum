@@ -1,4 +1,5 @@
 - [Course Overview](/)
+- [**Accelerated Track (10 Weeks)**](/ACCELERATED)
 - [Week 0: Setup](/SETUP)
 
 - **Phase 1: Foundations**
